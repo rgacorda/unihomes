@@ -1,3 +1,4 @@
+"use client"
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '../../../../../../supabase/client';
 import { checkConversation } from '@/actions/chat/checkConversation'; 

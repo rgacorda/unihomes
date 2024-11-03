@@ -1,3 +1,4 @@
+"use client"
 import HomeScreen from "@/modules/home/screens/HomeScreen";
 
 export default async function Home() {
