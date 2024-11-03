@@ -125,9 +125,10 @@ const LessorBusinessProfileScreen = async ({ companyId }: { companyId: { params:
 				lastname={data.owner?.lastname}
 				email={data.owner?.email}
 				cp_number={data.owner?.cp_number}
-				/>
+			/>
 		</ResponsiveLayout>
 	);
 };
 
 export default LessorBusinessProfileScreen;
+

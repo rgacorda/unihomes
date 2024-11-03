@@ -8,4 +8,4 @@ export default function useGetUserCompaniesById(id: string) {
         queryFn: () => getUserCompaniesById(id),
         enabled: !!id,
     });
-};
+}
