@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[class~="dark"] {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .bg-dot {
+    background-image: radial-gradient(circle, #b2b2b2 1px, transparent 1px), linear-gradient(to top, #1e3a8a, #11151b);
+    background-size: 20px 20px, cover;
+    background-blend-mode: overlay;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 216 100% 95%;
+    --foreground: 216 5% 0%;
+    --card: 216 50% 90%;
+    --card-foreground: 216 5% 10%;
+    --popover: 216 100% 95%;
+    --popover-foreground: 216 100% 0%;
+    --primary: 216 83% 34%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 216 30% 70%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 214.3 94.6% 92.7%;
+    --muted-foreground: 216 5% 35%;
+    --accent: 213.3 96.9% 87.3%;
+    --accent-foreground: 216 5% 10%;
+    --destructive: 0 100% 30%;
+    --destructive-foreground: 216 5% 90%;
+    --border: 216 30% 50%;
+    --input: 216 30% 18%;
+    --ring: 216 83% 34%;
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 216 50% 5%;
+    --foreground: 216 5% 90%;
+    --card: 216 50% 0%;
+    --card-foreground: 216 5% 90%;
+    --popover: 216 50% 5%;
+    --popover-foreground: 216 5% 90%;
+    --primary: 216 83% 34%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222.2 84% 4.9%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 215 20.2% 65.1%;
+    --muted-foreground: 216 5% 60%;
+    --accent: 215.3 25% 26.7%;
+    --accent-foreground: 216 5% 90%;
+    --destructive: 0 100% 30%;
+    --destructive-foreground: 216 5% 90%;
+    --border: 216 30% 18%;
+    --input: 216 30% 18%;
+    --ring: 216 83% 34%;
+    --radius: 0.5rem;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 200px;
+}
+
+body {
+  @apply bg-background text-foreground;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  .field-sizing {
+    field-sizing: content;
+  }
+}
+
+/* Wrapper styling for rich text content */
+.rich-text-content {
+  @apply space-y-4;
+}
+
+/* Paragraphs */
+.rich-text-content p {
+  @apply text-base leading-relaxed mb-4;
+}
+
+/* Headings */
+.rich-text-content h1 {
+  @apply text-3xl font-bold mb-6;
+}
+
+.rich-text-content h2 {
+  @apply text-2xl font-semibold mb-5;
+}
+
+.rich-text-content h3 {
+  @apply text-xl font-medium mb-4;
+}
+
+/* Blockquotes */
+.rich-text-content blockquote {
+  @apply border-l-4 pl-4 italic text-lg my-4;
+}
+
+/* Bullet Lists */
+.rich-text-content ul {
+  @apply list-disc pl-6;
+}
+
+.rich-text-content ul li {
+  @apply mb-2;
+}
+
+/* Ordered Lists */
+.rich-text-content ol {
+  @apply list-decimal pl-6;
+}
+
+.rich-text-content ol li {
+  @apply mb-2;
+}
+
+
+.uppy-Dashboard-inner {
+  width: auto !important;
+  height: 22rem !important;
+}
+
