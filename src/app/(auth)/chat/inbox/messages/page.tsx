@@ -10,10 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 const supabase = createClient();
 
-interface InboxProps {
-  receiver_id: string | number;
-}
-const Inbox = ({ receiver_id }: InboxProps) => {
+
+const Inbox = ({ receiver_id }: { receiver_id: number }) => {
   const [messages, setMessages] = useState([]);
   const [messageContent, setMessageContent] = useState('');
   const [user, setUser] = useState(null);
