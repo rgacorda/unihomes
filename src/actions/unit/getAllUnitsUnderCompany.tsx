@@ -1,7 +1,7 @@
 import { createClient } from "../../../supabase/client"
 const supabase = createClient()
 
-export const getAllUnitsUnderCompany = async (companyId:Number) => {
+export const getAllUnitsUnderCompany = async (companyId:number) => {
     try {
         const { data, error } = await supabase
             .from("unit")

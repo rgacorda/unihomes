@@ -103,7 +103,7 @@ export const getFilteredListings = async (property_id: number[]|null, amenity_na
     if (privacy_type && privacy_type.length > 0) {
         query = query.in('privacy_type', privacy_type);
     }
-    let unit_id = await filteredAmenitys();
+    const unit_id = await filteredAmenitys();
     if (unit_id && unit_id.length > 0) {
         query = query.in('id', unit_id);
     }

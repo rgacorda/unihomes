@@ -72,8 +72,6 @@ export function DataTableViewOptions<TData>({
 							columnHeader = 'Government ID';
 						} else if (column.id === 'businessLicenseUrl') {
 							columnHeader = 'Business License';
-						} else if (column.id === 'name') {
-							columnHeader = 'Name';
 						} else if (column.id === 'user') {
 							columnHeader = 'User';
 						} else if (column.id === 'userEmail') {
