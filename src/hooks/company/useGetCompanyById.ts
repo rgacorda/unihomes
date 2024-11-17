@@ -8,4 +8,4 @@ export default function useGetCompanyById(user_id: string, company_id: string) {
         queryFn: () => getCompanyById(user_id, company_id),
         enabled: !!user_id && !!company_id,
     });
-}
+};

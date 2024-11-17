@@ -16,12 +16,12 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 
-import { createPropertyTypeSchema } from "@/lib/schemas/createPropertySchema";
+import { createPropertyTypeSchema } from "@/lib/schemas/propertySchema";
 import ListingStepButton from "./ListingStepButton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 import { useRouter } from "next/navigation";
-import { usePropertyAddFormContext } from "./PropertyAddFormProvider";
+import { usePropertyAddFormContext } from "../unit/UnitAddFormProvider";
 
 
 function PropertyTypeForm({ propertyId }: { propertyId: string }) {

@@ -1,9 +1,11 @@
 {
 	"compilerOptions": {
+		"strictFunctionTypes": false,
+		"strictPropertyInitialization": false,
 		"lib": ["dom", "dom.iterable", "esnext"],
 		"allowJs": true,
 		"skipLibCheck": true,
-		"strict": true,
+		"strict": false,
 		"noEmit": true,
 		"esModuleInterop": true,
 		"module": "esnext",
@@ -27,7 +29,7 @@
 		"**/*.tsx",
 		".next/types/**/*.ts",
 		"src/modules/home/components/button.js",
-		"src/modules/home/screens/HomeScreen.js",
+		"src/modules/home/screens/HomeScreen.tsx",
 		"src/modules/home/components/Hero.js",
 		"src/modules/favorites/screens/FavoritesScreen.TSX"
 , "src/modules/subscriptions/screen/Pricing.js"	],

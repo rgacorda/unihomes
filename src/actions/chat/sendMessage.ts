@@ -1,14 +1,15 @@
 import { createClient } from "@/utils/supabase/client";
 import { updateInbox } from "./updateInbox";
+import { toast } from "sonner";
 
 const supabase = createClient();
 
 interface SendMessageParams {
-  userId: string; 
-  receiverId: string; 
-  conversationId: string; 
-  messageContent: string; 
-  setMessages: React.Dispatch<React.SetStateAction<any[]>>; 
+  userId: string;
+  receiverId: string;
+  conversationId: string;
+  messageContent: string;
+  setMessages: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 export const sendMessage = async ({
@@ -24,7 +25,7 @@ export const sendMessage = async ({
   }
 
   if (!messageContent.trim()) {
-    console.warn('Message cannot be empty');
+    toast.error('Message cannot be empty');
     return;
   }
 
@@ -34,14 +35,13 @@ export const sendMessage = async ({
     content: messageContent,
     conversation_id: conversationId,
     created_at: new Date(),
-    read: false,
   }]);
 
-  await updateInbox(userId, receiverId,messageContent);
+  await updateInbox(userId, receiverId, messageContent);
 
   if (error) {
     console.error('Error sending message:', error);
-    alert('Error sending message. Please try again.');
+    toast.error('Error sending message. Please try again.');
   } else if (data && data.length > 0) {
     setMessages(prevMessages => [
       ...prevMessages,

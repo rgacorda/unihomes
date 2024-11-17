@@ -21,6 +21,7 @@ function NavBar() {
 		lastname: '',
 		initials: '',
 	});
+	const navChoice = spiels.NAVBAR_OVERALL_LIST;
 	const supabase = createClient();
 	const toggleMenu = () => setMenu((prev) => !prev);
 	const openModal = (type: 'login' | 'register') => {
@@ -44,7 +45,6 @@ function NavBar() {
 				console.log('No session found.');
 			}
 		};
-
 		checkSession();
 	}, []);
 
@@ -71,7 +71,7 @@ function NavBar() {
 						height={80}
 						className='h-8 w-auto scale-[2]'
 					/>
-					<NavbarMenu />
+					<NavbarMenu session={loggedIn} />
 					<div className='flex items-center gap-[2px]'>
 						<NotificationPopover />
 						<div className='pr-2'>
@@ -125,15 +125,18 @@ function NavBar() {
 				{menu && (
 					<div className='bg-white dark:bg-card bg-opacity-90 py-4 w-full'>
 						<div className='flex flex-col gap-8 mt-8 mx-4'>
-							{spiels.NAVBAR_OVERALL_LIST.map((item, index) => (
-								<a
-									key={index}
-									href={item.href}
-									className='hover:text-card cursor-pointer flex items-center gap-2 font-[500] text-gray'
-								>
-									{item.label}
-								</a>
-							))}
+							{spiels.NAVBAR_OVERALL_LIST.map(
+								(item, index) =>
+									loggedIn || (item.label !== 'Favorites' && item.label !== 'Messages') ? (
+										<a
+											key={index}
+											href={item.href}
+											className='hover:text-card cursor-pointer flex items-center gap-2 font-[500] text-gray'
+										>
+											{item.label}
+										</a>
+									) : null
+							)}
 							{!loggedIn && (
 								<a
 									onClick={() => openModal('register')}

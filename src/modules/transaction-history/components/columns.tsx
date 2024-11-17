@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { ColumnDef, Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { DataTableColumnHeader } from "@/app/(auth)/(lessor-dashboard)/reservations/data-column-header";
+import { DataTableColumnHeader } from "@/components/table/data-column-header";
 import { Badge } from "@/components/ui/badge";
 import { Star, XCircle } from "lucide-react";
 import AddReviewModal from "./AddReviewModal";
 import {
   fetchReviewData,
   deleteReview,
-  cancelTransaction
+  cancelTransaction,
 } from "@/actions/transaction/column";
 
 interface Review {
@@ -39,7 +39,6 @@ const TransactionActionsCell = ({ row }: { row: Row<Transaction> }) => {
 
     getReviewData();
   }, [unitId, row.original.user_id]);
-
 
   const handleDeleteReview = async () => {
     if (!reviewData) return;
@@ -110,12 +109,6 @@ const TransactionActionsCell = ({ row }: { row: Row<Transaction> }) => {
           <XCircle className="h-4 w-4 mr-2" />
           Cancel
         </Button>
-      )}
-
-      {transactionStatus === "cancelled" && (
-        <div className=" flex justify-center items-center ">
-          <span className="text-red-700 font-semibold">Cancelled</span>
-        </div>
       )}
     </div>
   );

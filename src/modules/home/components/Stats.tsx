@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import spiels from '@/lib/constants/spiels';
+import { useEffect, useState } from 'react';
+import { getTotalLessors, getTotalProperties, getTotalRatings, getTotalReservations } from '@/actions/landing/getDynamicData';
 
 const Stats = () => {
 	const itemVariants = {
@@ -9,13 +11,28 @@ const Stats = () => {
 		visible: { opacity: 1, x: 0 },
 	};
 
+	const [data, setData] = useState<any>({});
+
+	useEffect(() => {
+		const fetchData = async () => {
+			setData({
+				totalReservations: await getTotalReservations() || 0,
+				totalProperties: await getTotalProperties() || 0,
+				totalLessors: await getTotalLessors() || 0,
+				totalRatings: await getTotalRatings() || 0,
+			});
+		};
+
+		fetchData();
+	}, []);
+
 	return (
 		<section className='border-y border-blue-500 border-opacity-15 py-20'>
 			<div className='container'>
 				<p className='mb-2 text-xs text-muted-foreground'>
 					{spiels.STATS_LABEL}
 				</p>
-				<h2 className='font-semibold xs:text-xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl dark:text-primary-foreground'>
+				<h2 className='font-semibold xs:text-xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl dark:text-foreground'>
 					{spiels.STATS_HEADER}
 				</h2>
 				<div className='mt-14 grid gap-6 md:grid-cols-2 lg:mt-14 lg:grid-cols-4'>
@@ -38,7 +55,10 @@ const Stats = () => {
 									{item.label}
 								</h3>
 								<p className='text-sm text-muted-foreground md:text-base'>
-									{item.description}
+									+{index === 0 && data.totalReservations} 
+									{index === 1 && data.totalProperties}
+									{index === 2 && data.totalLessors}
+									{index === 3 && data.totalRatings} since last hour
 								</p>
 							</div>
 						</motion.div>

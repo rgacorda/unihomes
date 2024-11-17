@@ -1,9 +1,9 @@
-import { createClient } from "../../../supabase/client";
+import { createClient } from "@/utils/supabase/client";
 
 const supabase = createClient();
 
 export const getSpecificCompany = async (id: number) => {
-    const { data: company, error: companyError } = await supabase
+    let { data: company, error: companyError } = await supabase
         .from("company")
         .select("created_at, company_name, about, address, owner_id, id")
         .eq("id", id)
@@ -14,10 +14,10 @@ export const getSpecificCompany = async (id: number) => {
         throw companyError;
     }
 
-    const { data: owner, error: ownerError } = await supabase
+    let { data: owner, error: ownerError } = await supabase
         .from("account")
         .select("firstname, lastname, email, cp_number, id,profile_url")
-        .eq("id", company.owner_id)
+        .eq("id", company?.owner_id)
         .single();
 
     if (ownerError) {

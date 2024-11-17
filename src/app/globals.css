@@ -2,22 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root[class~="dark"] {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 @layer utilities {
@@ -34,7 +22,7 @@ body {
 
 @layer base {
   :root {
-    --background: 216 100% 95%;
+    --background: 42 5% 97%;
     --foreground: 216 5% 0%;
     --card: 216 50% 90%;
     --card-foreground: 216 5% 10%;
@@ -165,9 +153,7 @@ body {
   @apply mb-2;
 }
 
-
 .uppy-Dashboard-inner {
   width: auto !important;
   height: 22rem !important;
 }
-

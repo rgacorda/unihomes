@@ -8,8 +8,11 @@ import tempValues from '@/lib/constants/tempValues';
 import ResponsiveLayout from '@/components/ResponsiveLayout';
 import { getSpecificCompany } from '@/actions/company/getSpecificCompany';
 
-const LessorBusinessProfileScreen = async ({ companyId }: { companyId: { params: { id: string }, searchParams: object } }) => {
-	const { title, lessor_name } = tempValues.LISTINGS[0];
+const LessorBusinessProfileScreen = async ({
+	companyId,
+}: {
+	companyId: { params: { id: number }; searchParams: object };
+}) => {
 	const data = await getSpecificCompany(companyId.params.id);
 	return (
 		<ResponsiveLayout className='h-screen'>
@@ -28,20 +31,24 @@ const LessorBusinessProfileScreen = async ({ companyId }: { companyId: { params:
 										Dormitory
 									</Badge> */}
 									<div className='flex flex-col'>
-										<h1 className='font-semibold xs:text-xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl text-left dark:text-white ml-4'>
+										<h1 className='font-semibold xs:text-xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl text-left dark:text-white ml-4 mb-1'>
 											{data.company?.company_name}
 										</h1>
-										<p className='flex items-center text-muted-foreground lg:text-md ml-4'>
+										<p className='flex items-center text-foreground lg:text-md ml-4'>
 											<MapPin className='mr-1' height={18} width={18} />
 											{data.company?.address}
 										</p>
-										<p className='flex items-center text-muted-foreground lg:text-md ml-4'>
-											  Joined UniHomes since {new Date(data.company?.created_at).toLocaleDateString('en-US', {
-												year: 'numeric',
-												month: 'long',
-												day: 'numeric'
-											})}
-											</p>
+										<p className='flex items-center text-foreground lg:text-md ml-4'>
+											Joined UniHomes since{' '}
+											{new Date(data.company?.created_at).toLocaleDateString(
+												'en-US',
+												{
+													year: 'numeric',
+													month: 'long',
+													day: 'numeric',
+												}
+											)}
+										</p>
 									</div>
 									{/* <div className='flex items-center pt-6'>
 										<Button
@@ -64,18 +71,21 @@ const LessorBusinessProfileScreen = async ({ companyId }: { companyId: { params:
 							<div className='hidden md:flex flex-col items-center justify-start col-span-1 mx-auto py-10'>
 								<div className='flex flex-col items-center'>
 									<Avatar className='mb-1'>
-										<AvatarImage
-											src={data?.owner?.profile_url} 
-											alt='@shadcn'
-										/>
-										<AvatarFallback>CN</AvatarFallback>
+										<AvatarImage src={data?.owner?.profile_url} />
+										<AvatarFallback>
+											{data?.owner?.firstname.charAt(0)}
+											{data?.owner?.lastname.charAt(0)}
+										</AvatarFallback>
 									</Avatar>
 									<h1 className='font-semibold xl:text-md text-center dark:text-primary-foreground'>
 										{data?.owner?.firstname} {data?.owner?.lastname}
 									</h1>
-									<p className='text-sm text-gray-700'>Proprietor</p>
+									<p className='text-sm text-foreground'>Proprietor</p>
 								</div>
-								<Button className='text-xs p-0 m-0' variant='link'>
+								<Button
+									className='text-xs p-0 m-0 dark:text-blue-300'
+									variant='link'
+								>
 									<LucideMessageCircle
 										className='mr-1'
 										height={12}
@@ -92,18 +102,18 @@ const LessorBusinessProfileScreen = async ({ companyId }: { companyId: { params:
 						<div className='flex items-center p-2 border-y py-4 justify-between'>
 							<div className='flex items-center'>
 								<Avatar className='mb-1'>
-									<AvatarImage
-										src='https://github.com/shadcn.png'
-										alt='@shadcn'
-									/>
-									<AvatarFallback>CN</AvatarFallback>
+									<AvatarImage src={data?.owner?.profile_url} />
+									<AvatarFallback>
+										{data?.owner?.firstname.charAt(0)}
+										{data?.owner?.lastname.charAt(0)}
+									</AvatarFallback>
 								</Avatar>
 								<div className='flex flex-col ml-4'>
 									<p className='text-sm text-gray-700'>
 										Contact business owner
 									</p>
 									<h1 className='font-semibold xl:text-md dark:text-primary-foreground'>
-										{lessor_name}
+										{data?.owner?.firstname} {data?.owner?.lastname}
 									</h1>
 								</div>
 							</div>
@@ -131,4 +141,3 @@ const LessorBusinessProfileScreen = async ({ companyId }: { companyId: { params:
 };
 
 export default LessorBusinessProfileScreen;
-

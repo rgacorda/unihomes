@@ -21,10 +21,10 @@ import ListingStepButton from "./ListingStepButton";
 
 import { Tag, TagInput } from "emblor";
 
-import { createPropertyAmenitySchema } from "@/lib/schemas/createPropertySchema";
+import { createPropertyAmenitySchema } from "@/lib/schemas/propertySchema";
 
 import { useRouter } from "next/navigation";
-import { usePropertyAddFormContext } from "./PropertyAddFormProvider";
+import { usePropertyAddFormContext } from "../unit/UnitAddFormProvider";
 
 type PropertyAmenityData = z.infer<typeof createPropertyAmenitySchema>;
 

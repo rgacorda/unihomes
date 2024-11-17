@@ -1,34 +1,92 @@
-import tempValues from '@/lib/constants/tempValues';
-import { Image } from 'lucide-react';
-import React from 'react';
-import { Shield, Building, Bed, UserIcon } from 'lucide-react';
+import { Check } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Shield, Building, Bed, UserIcon, House } from 'lucide-react';
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
 interface PropertyDetailsProps {
-	details: string;
-	privacyType: string;
 	structure: string;
-	bedrooms: number;
-	beds: number;
 	occupants: number;
 	description: string;
-	amenitiesList: any[];
+	address: string;
+	facilities: any;
+	unitCount: number;
 }
 
 const PropertyDetails: React.FC<PropertyDetailsProps> = ({
-	privacyType,
 	structure,
-	bedrooms,
-	beds,
 	occupants,
 	description,
-	amenitiesList,
+	address,
+	facilities,
+	unitCount,
 }) => {
+	const [isExpanded, setIsExpanded] = useState(false);
+	const [shouldShowToggle, setShouldShowToggle] = useState(false);
+	const descriptionRef = useRef<HTMLDivElement>(null);
+
+	const handleToggle = () => {
+		setIsExpanded(!isExpanded);
+	};
+
+	useEffect(() => {
+		const checkDescriptionHeight = () => {
+			if (descriptionRef.current) {
+				const descriptionHeight = descriptionRef.current.scrollHeight;
+				const lineHeight = parseInt(
+					window.getComputedStyle(descriptionRef.current).lineHeight,
+					10
+				);
+				const numberOfLines = descriptionHeight / lineHeight;
+
+				if (numberOfLines > 4) {
+					setShouldShowToggle(true);
+				} else {
+					setShouldShowToggle(false);
+				}
+			}
+		};
+
+		checkDescriptionHeight();
+		window.addEventListener('resize', checkDescriptionHeight);
+
+		return () => {
+			window.removeEventListener('resize', checkDescriptionHeight);
+		};
+	}, [description]);
 	return (
 		<>
-			<div className='border-b border-gray-300 pb-6 mb-6'>
-				<h5 className='text-2xl font-semibold pb-2'>Unit Overview</h5>
-				<div className='bg-white dark:bg-secondary shadow-md rounded-lg p-6'>
-					<div className='flex flex-col space-y-4'>
-						<div className='flex items-center justify-between'>
+			<Card className='bg-white dark:bg-secondary border border-gray-300'>
+				<CardHeader>
+					<CardTitle>Property Overview</CardTitle>
+					<CardDescription className='border-b border-gray-300 pb-3'>
+						{address}
+					</CardDescription>
+				</CardHeader>
+				<CardContent className='text-sm font-normal'>
+					<div
+						className={`${
+							isExpanded ? '' : 'line-clamp-4'
+						} overflow-hidden transition-all`}
+						ref={descriptionRef}
+					>
+						{description}
+					</div>
+
+					{shouldShowToggle && (
+						<button
+							onClick={handleToggle}
+							className='text-blue-500 dark:text-blue-300 text-sm mt-2 '
+						>
+							{isExpanded ? 'See less' : 'See more'}
+						</button>
+					)}
+					<div className='flex flex-col space-y-4 border-t border-gray-300 mt-4 pt-4'>
+						{/* <div className='flex items-center justify-between'>
 							<div className='flex items-center'>
 								<Shield className='w-6 h-6 text-gray-700 dark:text-neutral-300 mr-2' />
 								<h5 className='text-md font-semibold '>Privacy Type</h5>
@@ -36,7 +94,7 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({
 							<p className='text-gray-700 dark:text-neutral-300'>
 								{privacyType}
 							</p>
-						</div>
+						</div> */}
 						<div className='flex items-center justify-between'>
 							<div className='flex items-center'>
 								<Building className='w-6 h-6 text-gray-700 dark:text-neutral-300 mr-2' />
@@ -44,19 +102,26 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({
 							</div>
 							<p className='text-gray-700 dark:text-neutral-300'>{structure}</p>
 						</div>
-						<div className='flex items-center justify-between'>
+						{/* <div className='flex items-center justify-between'>
 							<div className='flex items-center'>
 								<Bed className='w-6 h-6 text-gray-700 dark:text-neutral-300 mr-2' />
 								<h5 className='text-md font-semibold'>Number of Bedrooms</h5>
 							</div>
 							<p className='text-gray-700 dark:text-neutral-300'>{bedrooms}</p>
-						</div>
-						<div className='flex items-center justify-between'>
+						</div> */}
+						{/* <div className='flex items-center justify-between'>
 							<div className='flex items-center'>
 								<Bed className='w-6 h-6 text-gray-700 dark:text-neutral-300 mr-2' />
 								<h5 className='text-md font-semibold'>Number of Beds</h5>
 							</div>
 							<p className='text-gray-700 dark:text-neutral-300'>{beds}</p>
+						</div> */}
+						<div className='flex items-center justify-between'>
+							<div className='flex items-center'>
+								<House className='w-6 h-6 text-gray-700 dark:text-neutral-300 mr-2' />
+								<h5 className='text-md font-semibold'>Current Units</h5>
+							</div>
+							<p className='text-gray-700 dark:text-neutral-300'>{unitCount}</p>
 						</div>
 						<div className='flex items-center justify-between'>
 							<div className='flex items-center'>
@@ -66,40 +131,26 @@ const PropertyDetails: React.FC<PropertyDetailsProps> = ({
 							<p className='text-gray-700 dark:text-neutral-300'>{occupants}</p>
 						</div>
 					</div>
-				</div>
-			</div>
-			<div className='w-full pb-4 mb-6'>
-				<h1 className='text-2xl font-semibold tracking-tight pb-4'>
-					Description
-				</h1>
-				<p className=''>{description}</p>
-			</div>
+				</CardContent>
+			</Card>
 
-			<div>
-				{/* general */}
-				{amenitiesList && amenitiesList.length > 0 && (
-					<div className='border-t border-gray-300 flex flex-col py-6 mr-4'>
-						<h4 className='scroll-m-20 text-2xl font-semibold tracking-tight'>
-							General
-						</h4>
-						<div className='grid grid-cols-2 lg:grid-cols-2 md:grid-cols-1 gap-2'>
-							{amenitiesList.map((amenity) => (
-								<div
-									className='flex flex-row items-center gap-3 my-2'
-									key={amenity.id}
-								>
-									<span className='inline-block w-2 h-2 bg-gray-700 rounded-full mr-2' />
-									<div>
-										<h5 className='scroll-m-20 text-lg font-semibold tracking-tight'>
-											{amenity.amenity_name}
-										</h5>
-									</div>
+			{facilities.length > 0 && (
+				<Card className='bg-white dark:bg-secondary border border-gray-300'>
+					<CardHeader>
+						<CardTitle>Facilities & Amenities</CardTitle>
+					</CardHeader>
+					<CardContent className='text-sm font-normal'>
+						<div className='grid grid-cols-4 gap-1'>
+							{facilities.map((item, index) => (
+								<div key={index} className='flex items-center'>
+									<Check className='mr-2 text-green-600' size={16} />
+									<span>{item}</span>
 								</div>
 							))}
 						</div>
-					</div>
-				)}
-			</div>
+					</CardContent>
+				</Card>
+			)}
 		</>
 	);
 };

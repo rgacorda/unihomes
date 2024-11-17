@@ -1,17 +1,11 @@
-
-import { AppSidebar } from "@/modules/hosting/components/sidebar/app-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
-
+import TopNavigation from "@/modules/hosting/components/top-nav";
+import { Toaster } from "sonner";
 
 function LessorLayout({ children }: { children: React.ReactNode }) {
     return (
         <div>
-            <SidebarProvider>
-                <AppSidebar />
-                <section className="w-full">
-                    {children}
-                </section>
-            </SidebarProvider>
+            <TopNavigation />
+            <section className="w-full">{children}</section>
         </div>
     );
 }

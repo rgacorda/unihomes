@@ -12,7 +12,7 @@ const spiels = {
 		'Stay in the loop with UniHomes! Sign up with your email to receive the latest updates.',
 		'Don’t miss out — join our community today!',
 	],
-	FOOTER: '© 2024 UniHomes. All rights reserved.',
+	FOOTER: '© 2024 UniHomes',
 	HERO_BADGE: 'New Release',
 	HERO_DESCRIPTION:
 		'Find your perfect rental with ease. Search verified dorms, condos, and apartments, explore listings, and connect with homeowners—all in one simple platform.',
@@ -41,7 +41,7 @@ const spiels = {
 	STATS_HEADER: 'Here are some stats to look at',
 	STATS_DATA: [
 		{
-			label: 'Clients',
+			label: 'Reservations',
 			stat: '21K',
 			description: '+21 since last hour',
 			avatar: User,
@@ -53,7 +53,7 @@ const spiels = {
 			avatar: Warehouse,
 		},
 		{
-			label: 'Lessors',
+			label: 'Proprietors',
 			stat: '100',
 			description: '+21 since last hour',
 			avatar: Users2,
@@ -114,7 +114,7 @@ const spiels = {
 	BUTTON_BACK_HOME: 'Back to Home',
 	BUTTON_SEARCH: 'Search',
 	BUTTON_VISIT_COMPANY: 'Visit Company Page',
-	BUTTON_MESSAGE: 'Message',
+	BUTTON_MESSAGE: 'Send',
 	BUTTON_RESERVE: 'Reserve',
 	BUTTON_UPDATE_PROFILE: 'Update Profile',
 	BUTTON_DELETE_ACCOUNT: 'Delete Account',
@@ -140,24 +140,29 @@ const spiels = {
 		{
 			label: 'Home',
 			href: '/',
+			sessionRequired: false,
 		},
 		{
 			label: 'Listings',
 			href: '/client/listings',
+			sessionRequired: false,
 		},
 		// For logged in users
 		{
 			label: 'Messages',
 			href: '/chat/inbox',
+			sessionRequired: true,
 		},
 		{
 			label: 'Favorites',
 			href: '/client/favorites',
+			sessionRequired: true,
 		},
 
 		{
 			label: 'Pricing',
 			href: '/pricing',
+			sessionRequired: false,
 		},
 	],
 	NAVBAR_MENU_LIST_WITH_DROPDOWN: [
@@ -206,6 +211,28 @@ const spiels = {
 		},
 	],
 
+	SPECIFIC_LISTING_TABS: [
+		{
+			label: 'Overview',
+			href: '/overview',
+			value: 'overview',
+		},
+		{
+			label: 'Rooms',
+			href: '/rooms',
+			value: 'rooms',
+		},
+		{
+			label: 'Reviews',
+			href: '/reviews',
+			value: 'reviews',
+		},
+		{
+			label: 'Location',
+			href: '/location',
+			value: 'location',
+		},
+	],
 	//MODALS
 	MODAL_APPROVE: 'Confirm Approval',
 	MODAL_APPROVE_HEADER: 'Are you sure you want to approve this lessor?',

@@ -15,27 +15,16 @@ export const fetchProperty = async (
   propertyId: number,
   userId: string | null
 ) => {
-  const { data: unit, error } = await supabase
-    .from("unit")
-    .select(
-      `
+  const { data: property, error } = await supabase
+    .from('property')
+    .select(`
       *,
-      property (
-        address,
-        company (
-          owner_id (
-            firstname,
-            lastname,
-            id,
-            profile_url
-          ),
-          company_name,
-          id
-        )
+      company:company_id (
+        *,
+        account:owner_id (*)
       )
-    `
-    )
-    .eq("id", propertyId)
+    `)
+    .eq('id', propertyId)
     .single();
 
   if (error) {
@@ -43,20 +32,74 @@ export const fetchProperty = async (
     return null;
   }
 
-  let favorite = false;
-  if (userId) {
-    const { data: favoriteData } = await supabase
-      .from("favorites")
-      .select("id")
-      .eq("Account_ID", userId)
-      .eq("unit_ID", propertyId)
-      .single();
+  return { property };
+};
 
-    favorite = !!favoriteData;
+export const fetchPropertyReviews = async (propertyId: number) => {
+      const { data, error } = await supabase
+      .rpc('get_all_reviews_under_property', { p_id: propertyId })
+
+    if (error) {
+      console.error('Error fetching ratings with user details:', error);
+      return null;
+    }
+
+    return data;
+}
+
+export const fetchPropertyFacilities = async (propertyId: number) => {
+  const { data, error } = await supabase
+  .rpc('get_property_common_amenities', { p_id: propertyId })
+
+  if (error) {
+    console.error("Error fetching property facilities:", error);
+    return null;
+  }
+  return data.map(item => item.amenity_name)
+}
+
+export const fetchPropertyUnits = async (propertyId: number) => {
+  const { data: units, error: unitError } = await supabase
+    .rpc('get_unit_under_property', { p_id: propertyId });
+
+  if (unitError) {
+    console.error("Error fetching property units:", unitError);
+    return null;
+  }
+  return units
+  //KULANG PA COLUMNS NA NIRERETURN
+}
+
+
+export const fetchPropertyLocation = async (propertyId: number) => {
+  const { data, error } = await supabase
+    .rpc('get_property_location' , { p_id: propertyId })
+
+  if (error) {
+    console.error("Error fetching property location:", error);
+    return null;
+  }
+  return data
+}
+
+export const fetchFavorite = async (userId: string | null, propertyId: number) => {
+  let favorite = false
+  const { data, error } = await supabase
+    .from("favorites")
+    .select("*")
+    .eq("Account_ID", userId)
+    .eq("property_ID", propertyId)
+    .single();
+
+    favorite = !!data
+
+  if (error) {
+    console.error("Error fetching favorites:", error);
+    return null;
   }
 
-  return { unit, favorite };
-};
+  return favorite;
+}
 
 export const toggleFavourite = async (
   isFavourite: boolean,
@@ -70,12 +113,12 @@ export const toggleFavourite = async (
       .from("favorites")
       .delete()
       .eq("Account_ID", userId)
-      .eq("unit_ID", propertyId);
+      .eq("property_ID", propertyId);
     return !error;
   } else {
     const { error } = await supabase
       .from("favorites")
-      .insert([{ Account_ID: userId, unit_ID: propertyId }]);
+      .insert([{ Account_ID: userId, property_ID: propertyId }]);
     return !error;
   }
 };

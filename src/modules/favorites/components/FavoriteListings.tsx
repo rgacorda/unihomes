@@ -5,8 +5,15 @@ import { createClient } from '@/utils/supabase/client';
 import LoadingPage from '@/components/LoadingPage';
 
 const supabase = createClient();
+interface HeroSectionProps {
+	searchTerm: string;
+	setSearchTerm: (term: string) => void;
+}
 
-export default function FavoriteListings() {
+export default function FavoriteListings({
+	searchTerm,
+	setSearchTerm,
+}: HeroSectionProps) {
 	const [favorites, setFavorites] = useState([]);
 	const [userId, setUserId] = useState(null);
 	const [loading, setLoading] = useState(true);
@@ -51,28 +58,16 @@ export default function FavoriteListings() {
 			const fetchFavorites = async () => {
 				try {
 					const { data, error } = await supabase
-						.from('favorites')
-						.select(
-							`
-              Account_ID,
-              unit:unit_ID(
-                id,
-                title,
-                description,
-                price,
-                thumbnail_url
-              )
-            `
-						)
-						.eq('Account_ID', userId);
+						.rpc('get_all_fav', { user_id: userId })
 
 					if (error) {
 						throw error;
 					}
 
-					console.log('Fetched Favorites Data:', data);
-					const favoriteProperties = data.map((fav) => fav.unit);
-					setFavorites(favoriteProperties || []);
+					// console.log('Fetched Favorites Data:', data);
+					// const favoriteProperties = data.map((fav) => fav.unit);
+					// setFavorites(favoriteProperties || []);
+					setFavorites(data || []);
 				} catch (error) {
 					console.error('Error fetching favorites:', error.message);
 					setError('Failed to fetch favorite properties');
@@ -84,6 +79,10 @@ export default function FavoriteListings() {
 			fetchFavorites();
 		}
 	}, [userId]);
+
+	const filteredFavorites = favorites.filter((item) =>
+		item.title?.toLowerCase().includes(searchTerm.toLowerCase())
+	);
 
 	if (loading) {
 		return (
@@ -101,11 +100,15 @@ export default function FavoriteListings() {
 		return <div>No favorite properties found.</div>;
 	}
 
+	if (filteredFavorites.length === 0) {
+		return <div>No favorite properties found.</div>;
+	}
+
 	return (
 		<div className='grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-2 sm:grid-cols-3 xs:grid-cols-2'>
-			{favorites.map((item) => (
+			{filteredFavorites.slice(0, 4).map((item) => (
 				<div key={item.id}>
-					<BranchListings {...item} />
+					<BranchListings key={item.id} {...item} />
 				</div>
 			))}
 		</div>
