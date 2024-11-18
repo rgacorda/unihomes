@@ -43,8 +43,16 @@ export const get_allProperties = async (
     if (unit_id && unit_id.length > 0) {
         query = query.overlaps('unit_ids', unit_id);
     }
-    if (minPrice && maxPrice) {
-        query = query.gte('minimum_price', minPrice).lte('maximum_price', maxPrice);
+    if (minPrice || maxPrice) {
+        if (minPrice && maxPrice) {
+            query = query.or(
+                `minimum_price.gte.${minPrice},maximum_price.lte.${maxPrice}`
+            );
+        } else if (minPrice) {
+            query = query.gte('minimum_price', minPrice);
+        } else if (maxPrice) {
+            query = query.lte('maximum_price', maxPrice);
+        }
     }
     if (beds) {
         query = query.gte('min_bed', beds);

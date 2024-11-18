@@ -28,6 +28,7 @@ import { Slider as PriceSlider } from '@nextui-org/slider';
 import { MdOutlineMyLocation } from 'react-icons/md';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from 'sonner';
+import { set } from 'date-fns';
 
 const householdPrivacyTypes = [
 	{ value: 'Private Room', label: 'Private Room' },
@@ -86,7 +87,7 @@ export default function FilterModal({
 	deviceLocation,
 	setDeviceLocation,
 	radius,
-	setRadius
+	setRadius,
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -98,6 +99,9 @@ export default function FilterModal({
 	const [mapKey, setMapKey] = useState(0);
 	const [selectedListing, setSelectedListing] = useState(null);
 	const [searchTerm, setSearchTerm] = useState<any>(null);
+	const [mapRadius, setMapRadius] = useState([250]);
+	const mapRef = useRef(null); 
+	const circleRef = useRef(null); 
 
 	//Filters
 	const [popUpAmenities, setPopUpAmenities] = useState(JSON.parse(JSON.stringify(selectedFilter)));
@@ -162,12 +166,33 @@ export default function FilterModal({
 
 	const handleMapClick = async (event) => {
 		if (event.latLng) {
-			const { lat, lng } = event.latLng.toJSON();
-			setPosition({ lat, lng });
-			setSelectedLocation({ lat, lng });
-			setMapKey((prevKey) => prevKey + 1);
+		  const { lat, lng } = event.latLng.toJSON();
+	
+		  // If there's a previously selected location, clear it (remove the old circle)
+		  if (circleRef.current) {
+			circleRef.current.setMap(null); // Remove the old circle from the map
+		  }
+	
+		  // Update the selectedLocation state for the new circle
+		  setSelectedLocation({ lat, lng });
+	
+		  // Create a new circle and store it in the circleRef
+		  const newCircle = new window.google.maps.Circle({
+			center: { lat, lng },
+			radius: mapRadius[0],
+			options: closeOptions,
+		  });
+	
+		  if (mapRef.current instanceof window.google.maps.Map) {
+			newCircle.setMap(mapRef.current);  // Ensure mapRef is a Google Maps instance
+			circleRef.current = newCircle; // Store the circle reference
+		  } else {
+			console.error("Map instance not found.");
+		  }
+	
 		}
-	};
+	  };
+
 
 	const handleMarkerClick = (listing) => {
 		setSelectedListing(listing);
@@ -204,6 +229,7 @@ export default function FilterModal({
 		setPopUpBeds(0);
 		setPopUpStarFilter(null);
 		setPopUpScoreFilter(null);
+		setDistanceFilter(null);
 	};
 
 	return (
@@ -258,38 +284,33 @@ export default function FilterModal({
 								</div>
 							</div>
 							<GoogleMap
-								key={mapKey}
+								ref={mapRef}  // Attach map reference
 								onClick={handleMapClick}
 								center={position}
 								zoom={15}
-								mapContainerClassName='w-full h-[300px] lg:h-full min-h-[340px]'
+								mapContainerClassName="w-full h-[300px] lg:h-full min-h-[340px]"
 								options={{ disableDefaultUI: true }}
-							>
+								>
 								{selectedLocation && (
 									<>
-										<Marker position={selectedLocation} />
-										<Circle
-											center={selectedLocation}
-											radius={radius[0]}
-											options={closeOptions}
-										/>
+									<Marker position={selectedLocation} />
 									</>
 								)}
 								<MarkerClusterer>
 									{(clusterer) => (
-										<>
-											{listings.map((listing) => (
-												<Marker
-													key={listing.id}
-													position={{
-														lat: listing.latitude,
-														lng: listing.longitude,
-													}}
-													clusterer={clusterer}
-													onClick={() => handleMarkerClick(listing)}
-												/>
-											))}
-										</>
+									<>
+										{listings.map((listing) => (
+										<Marker
+											key={listing.id}
+											position={{
+											lat: listing.latitude,
+											lng: listing.longitude,
+											}}
+											clusterer={clusterer}
+											onClick={() => handleMarkerClick(listing)}
+										/>
+										))}
+									</>
 									)}
 								</MarkerClusterer>
 							</GoogleMap>
@@ -309,10 +330,10 @@ export default function FilterModal({
 											</div>
 											<RadiusSlider
 												className='my-2'
-												defaultValue={radius}
+												defaultValue={mapRadius}
 												max={1000}
 												step={1}
-												onValueChange={setRadius}
+												onValueChange={setMapRadius}
 												onValueCommit={handleRadiusCommit}
 											/>
 										</form>
@@ -653,3 +674,4 @@ export default function FilterModal({
 		</Dialog>
 	);
 }
+

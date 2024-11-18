@@ -152,12 +152,14 @@ export default function Listings() {
 	};
 
 	useEffect(() => {
-		setListingLoading(true);
-		handleDeviceLocation();
-		(async () => {
+		const fetchData = async () => {
+			setListingLoading(true);
+			await handleDeviceLocation();
 			await fetchFilteredListings();
-		})();
-		setListingLoading(false);
+			setListingLoading(false);
+		};
+	
+		fetchData();
 	}, [
 		deviceLocation, 
 		selectedLocation, 
@@ -170,8 +172,10 @@ export default function Listings() {
 		starFilter,
 		scoreFilter,
 		minPrice,
-		maxPrice
+		maxPrice,
+		radius
 	]);
+	
 
 	
 
@@ -439,10 +443,14 @@ export default function Listings() {
 									</Label>
 
 									<div className='space-y-2 mt-2'>
-									<RadioGroup onValueChange={setDistanceFilter}>
+									<RadioGroup onValueChange={setDistanceFilter} value={distanceFilter}>
 										{distanceFromLocation.map((item) => (
 											<div key={item.value} className="flex items-center space-x-2">
-												<RadioGroupItem value={item.value} id={item.label} />
+												<RadioGroupItem 
+													value={item.value} 
+													id={item.label} 
+													checked={distanceFilter === item.value}
+													/>
 												<Label htmlFor={item.label} className="text-sm font-normal">
 													{item.label}
 												</Label>
