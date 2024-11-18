@@ -22,13 +22,9 @@ import {
 	MarkerClusterer,
 	StandaloneSearchBox
 } from '@react-google-maps/api';
-import { useMapsLibrary } from '@vis.gl/react-google-maps';
-import { MapContext } from './ListingsPage';
-import { get_allProperties } from '@/actions/listings/filtering-complete';
 import { Slider as RadiusSlider } from '@/components/ui/slider';
 import { Card, CardContent } from '@/components/ui/card';
 import { Slider as PriceSlider } from '@nextui-org/slider';
-import { Checkbox } from '@/components/ui/checkbox';
 import { MdOutlineMyLocation } from 'react-icons/md';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from 'sonner';
@@ -93,8 +89,6 @@ export default function FilterModal({
 	setRadius
 }) {
 	const [isOpen, setIsOpen] = useState(false);
-	const [error, setError] = useState(null);
-	const [loading, setLoading] = useState(true);
 
 	const increment = (value, setter) => setter(value + 1);
 	const decrement = (value, setter) => setter(value > 0 ? value - 1 : 0);

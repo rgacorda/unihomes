@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowDownUp, Filter, MinusCircle, PlusCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { GoogleMap } from '@react-google-maps/api';
 import { MapContext } from './ListingsPage';
 import { getAllAmenities } from '@/actions/listings/amenities';
 import LoadingPage from '@/components/LoadingPage';
@@ -13,9 +12,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@nextui-org/slider';
 import FilterModal from './FilterModal';
-import { distance } from 'framer-motion';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { max, min } from 'date-fns';
+
 
 const householdPrivacyTypes = [
 	{ value: 'Private Room', label: 'Private Room' },
@@ -75,8 +73,10 @@ const estimateTravelTime = (distance, averageSpeed = 4) => {
 };
 
 export default function Listings() {
+
 	const [listings, setListings] = useState([]);
 	const [loading, setLoading] = useState(true);
+	const [listingLoading, setListingLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [sortOrder, setSortOrder] = useState('asc');
 
@@ -152,8 +152,12 @@ export default function Listings() {
 	};
 
 	useEffect(() => {
+		setListingLoading(true);
 		handleDeviceLocation();
-		fetchFilteredListings();
+		(async () => {
+			await fetchFilteredListings();
+		})();
+		setListingLoading(false);
 	}, [
 		deviceLocation, 
 		selectedLocation, 
@@ -557,10 +561,21 @@ export default function Listings() {
 					</div>
 
 					{/* Lower Row: Listings */}
+					{listingLoading && (
+						<div className='flex justify-center items-center w-full'>
+							<LoadingPage />
+						</div>
+					)}
 					<div className='row-span-1 grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-4'>
-						{sortedListings.map((item) => (
-							<BranchListings 
-								key={item.id} {...item} />
+						{!listingLoading && sortedListings.map((item) => (
+							<BranchListings
+								key={item.id} {...item}
+								selectedFilter={selectedFilter}
+								selectedPrivacyType={selectedPrivacyType}
+								minPrice={minPrice}
+								maxPrice={maxPrice}
+								rooms={rooms}
+								beds={beds} />
 						))}
 					</div>
 				</div>
