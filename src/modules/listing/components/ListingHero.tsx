@@ -28,8 +28,8 @@ export default function ListingHero({
 
 		const options = {
 			bounds: new google.maps.LatLngBounds(
-				new google.maps.LatLng(117.17427453, 5.58100332277),
-				new google.maps.LatLng(126.537423944, 18.5052273625)
+				new google.maps.LatLng(16.374445, 120.592389),
+				new google.maps.LatLng(16.446445, 120.633389)
 			),
 			fields: ['geometry', 'name', 'formatted_address'],
 			componentRestrictions: { country: 'ph' },
@@ -37,13 +37,13 @@ export default function ListingHero({
 		const autocomplete = new places.Autocomplete(inputRef.current, options);
 		setPlacesAutocomplete(autocomplete);
 
-		// Event listener for place change
+
 		autocomplete.addListener('place_changed', () => {
 			const place = autocomplete.getPlace();
 			const location = place.geometry?.location;
 
 			if (location) {
-				// Update the search term with the place name or formatted address
+
 				setSearchTerm(place.formatted_address || place.name || '');
 				setDeviceLocation({
 					lat: location.lat(),
@@ -77,7 +77,7 @@ export default function ListingHero({
 		<div className='flex items-center justify-center h-[205px] w-screen rounded-b-3xl'>
 			<div className='w-full px-2 py-8 w-7xl'>
 				<div className='flex flex-col items-center text-center rounded-b-3xl'>
-					<h1 className='text-pretty font-bold lg:text-5xl md:text-3xl sm:text-xl xs:text-xl text-white'>
+					<h1 className='text-pretty font-bold lg:text-5xl md:text-3xl text-2xl text-white'>
 						Explore Listings
 					</h1>
 					<p className='text-pretty lg:text-lg md:text-md sm:text-sm text-gray-200'>
@@ -87,7 +87,7 @@ export default function ListingHero({
 						<label htmlFor='search' className='sr-only'>
 							{spiels.BUTTON_SEARCH}
 						</label>
-						<div className='relative flex lg:w-full md:w-[75%] xs:w-[50%]'>
+						<div className='relative flex lg:w-full md:w-[75%] xs:w-[70%]'>
 							<SearchIcon className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-black dark:text-muted-foreground' />
 							<input
 								ref={inputRef}
