@@ -1,4 +1,6 @@
+
 import { createClient } from "@/utils/supabase/client";
+import { toast } from "sonner";
 
 const supabase = createClient();
 
@@ -12,8 +14,7 @@ export const fetchUser = async () => {
 };
 
 export const fetchProperty = async (
-  propertyId: number,
-  userId: string | null
+  propertyId: number
 ) => {
   const { data: property, error } = await supabase
     .from('property')
@@ -31,9 +32,10 @@ export const fetchProperty = async (
     console.error("Error fetching property:", error);
     return null;
   }
-
   return { property };
 };
+
+  
 
 export const fetchPropertyReviews = async (propertyId: number) => {
       const { data, error } = await supabase
@@ -48,14 +50,28 @@ export const fetchPropertyReviews = async (propertyId: number) => {
 }
 
 export const fetchPropertyFacilities = async (propertyId: number) => {
+  const { data: pivot, error: pivotError } = await supabase
+  .from('property_amenities')
+  .select('amenity_id')
+  .eq('property_id', propertyId)
+
+  if (pivotError) {
+    console.error("Error fetching property facilities:", pivotError);
+    return null;
+  } 
+
   const { data, error } = await supabase
-  .rpc('get_property_common_amenities', { p_id: propertyId })
+  .from('amenity')
+  .select('*')
+  .in('id', pivot.map(item => item.amenity_id))
 
   if (error) {
     console.error("Error fetching property facilities:", error);
     return null;
   }
-  return data.map(item => item.amenity_name)
+  const amenity_names = data.map(item => item.amenity_name)
+  // console.log(amenity_names)
+  return amenity_names
 }
 
 export const fetchPropertyUnits = async (propertyId: number) => {
@@ -67,7 +83,6 @@ export const fetchPropertyUnits = async (propertyId: number) => {
     return null;
   }
   return units
-  //KULANG PA COLUMNS NA NIRERETURN
 }
 
 
@@ -82,13 +97,25 @@ export const fetchPropertyLocation = async (propertyId: number) => {
   return data
 }
 
+export const getPropertyHouseRules = async (propertyId: number) => {
+  const { data, error } = await supabase
+  .from('house_rules')
+  .select('*')
+  .eq('property_id', propertyId)
+  if (error) {
+    console.error("Error fetching property house rules:", error);
+    return null;
+  }
+  return data
+}
+
 export const fetchFavorite = async (userId: string | null, propertyId: number) => {
   let favorite = false
   const { data, error } = await supabase
     .from("favorites")
     .select("*")
-    .eq("Account_ID", userId)
-    .eq("property_ID", propertyId)
+    .eq("account_id", userId)
+    .eq("property_id", propertyId)
     .single();
 
     favorite = !!data
@@ -112,13 +139,19 @@ export const toggleFavourite = async (
     const { error } = await supabase
       .from("favorites")
       .delete()
-      .eq("Account_ID", userId)
-      .eq("property_ID", propertyId);
+      .eq("account_id", userId)
+      .eq("property_id", propertyId);
+    if (error) {
+      toast.error(error.message);
+    }
     return !error;
   } else {
     const { error } = await supabase
       .from("favorites")
-      .insert({ Account_ID: userId, property_ID: propertyId });
+      .insert({ account_id: userId, property_id: propertyId });
+    if (error) {
+      toast.error(error.message);
+    }
     return !error;
   }
 };

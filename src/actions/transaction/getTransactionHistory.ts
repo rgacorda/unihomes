@@ -60,9 +60,13 @@ export const getTransactionHistory = async (userId: string) => {
         service_option,     
         appointment_date, 
         transaction_status, 
-        isPaid, 
+        isPaid,
+        contract,
+        client_name,
+        month_contract,
+        transaction_type, 
         unit:unit_id (
-          id, title, unit_code
+          id, title, unit_code, property:property_id (title)
         ),
         account:user_id (
           firstname, 
@@ -72,6 +76,15 @@ export const getTransactionHistory = async (userId: string) => {
       )
       .in("unit_id", unitIds);
 
+      const customOrder = ["reserved", "pending", "visited", "cancelled"];
+
+      // Sort transactions based on transaction_status
+      const sortedTransactions = transactions.sort((a, b) => {
+        return customOrder.indexOf(a.transaction_status) - customOrder.indexOf(b.transaction_status);
+      });
+
+    console.log(transactions);
+
     if (transactionsError || !transactions?.length) {
       console.error(
         `Error fetching transactions for owned units:`,
@@ -80,10 +93,14 @@ export const getTransactionHistory = async (userId: string) => {
       return [];
     }
 
-    return transactions.map((transaction) => ({
+    return sortedTransactions.map((transaction) => ({
       ...transaction,
       unit_title: transaction.unit.title,
-      client_name: `${transaction.account.firstname} ${transaction.account.lastname}`,
+      property_title: transaction.unit.property.title,
+      client_name:
+        transaction.user_id === null
+          ? transaction.client_name
+          : `${transaction.account.firstname} ${transaction.account.lastname}`,
     }));
   } catch (error: any) {
     console.error(

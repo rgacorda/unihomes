@@ -14,9 +14,7 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-export function BreadcrumbSection({
-	propertyName,
-}) {
+export function BreadcrumbSection({ propertyName }) {
 	return (
 		<Breadcrumb className='pt-6'>
 			<BreadcrumbList>
@@ -43,7 +41,9 @@ export function BreadcrumbSection({
 				</BreadcrumbItem>
 				<BreadcrumbSeparator />
 				<BreadcrumbItem>
-					<BreadcrumbPage>{propertyName}</BreadcrumbPage>
+					<BreadcrumbPage className='text-primary dark:text-blue-300 font-semibold'>
+						{propertyName}
+					</BreadcrumbPage>
 				</BreadcrumbItem>
 			</BreadcrumbList>
 		</Breadcrumb>

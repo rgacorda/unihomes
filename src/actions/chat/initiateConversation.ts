@@ -1,38 +1,39 @@
-"use server";
-import { createClient } from '@/utils/supabase/server';
+"use client";
+import { createClient } from '@/utils/supabase/client';
 import { checkConversation } from './checkConversation';
 import { sendMessage } from './sendMessage';
+import { sendSystemMessage } from './systemGeneratedMessage';
+import { toast } from 'sonner';
 
 const supabase = createClient();
 
-export const initializeSendMessage = async (ownerId: string, propertyId: string, ownerName: string, ownerLastname: string, inputValue?: string) => {
+export const initializeSendMessage = async (ownerId: string, ownerName: string, ownerLastname: string, inputValue?: string, propertyTitle?: string) => {
   const currentUser = await supabase.auth.getUser();
-  const conversationUrl = await generateMessage(currentUser.data.user.id, ownerId, propertyId, ownerName, ownerLastname, inputValue);
+  const conversationUrl = await generateMessage(currentUser.data.user.id, ownerId, ownerName, ownerLastname, inputValue, propertyTitle);
 
   return conversationUrl;
 };
 
-const generateMessage = async (currentUserId, currentReceiverId, propertyId, ownerName, ownerLastname, inputValue: string) => {
-  const unitDetails = await supabase
-    .from('unit')
-    .select('*')
-    .eq('id', propertyId)
-    .single();
-
-  const unitName = unitDetails.data.title;
-  const unitPrice = unitDetails.data.price;
-  // const messageTemplate = `Hi ${ownerName}, I am interested in ${unitName} at ${unitPrice} dollars.`;
-  const messageTemplate = ` ${inputValue} on ${unitName}.`;
+const generateMessage = async (currentUserId, currentReceiverId, ownerName, ownerLastname, inputValue: string, propertyTitle) => {
+  const messageTemplate = ` ${inputValue}`;
 
   const conversationId = await checkConversation(currentUserId, currentReceiverId, ownerName, ownerLastname);
 
   if (conversationId) {
+    await sendSystemMessage({
+      userId: currentUserId,
+      receiverId: currentReceiverId,
+      conversationId,
+      messageContent: `On "${propertyTitle}"`,
+      setMessages: () => {},
+    });
     await sendMessage({
       userId: currentUserId,
       receiverId: currentReceiverId,
       conversationId,
       messageContent: messageTemplate,
       setMessages: () => {},
+      
     });
     return '/chat/inbox'; 
   } else {

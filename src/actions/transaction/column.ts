@@ -1,14 +1,16 @@
 import { createClient } from "@/utils/supabase/client";
+import { notifyProprietor } from "../email/notifyProprietor";
 
 const supabase = createClient();
 
-export const fetchReviewData = async (unitId: number, userId: string) => {
+export const fetchReviewData = async (unitId: number, userId: string, transactionId?: number) => {
   try {
     const { data, error } = await supabase
       .from("ratings_review")
       .select("*")
       .eq("unit_id", unitId)
       .eq("user_id", userId)
+      .eq("transaction_id", transactionId)
       .limit(1)
       .single();
 
@@ -43,21 +45,43 @@ export const deleteReview = async (reviewId: number) => {
   }
 };
 
-export const cancelTransaction = async (transactionId: number) => {
+export const cancelTransaction = async (transactionId: number, unitId: number, reason: string | null = null) => {
   try {
-    const { error } = await supabase
+    const { error: transactionError } = await supabase
       .from("transaction")
-      .update({ transaction_status: "cancelled" })
+      .update({ transaction_status: "cancelled", cancellation_reason: reason })
       .match({ id: transactionId });
 
-    if (error) {
-      console.error("Error cancelling transaction:", error.message);
-      return false;
+    if (transactionError) throw new Error("Error cancelling transaction");
+
+    const { data, error } = await supabase
+      .from("unit")
+      .select(`
+        property:property_id (
+        title,
+          company:company_id (
+            owner:owner_id (
+              email
+            )
+          )
+        )
+      `)
+      .eq("id", unitId)
+      .single();
+
+    if (error || !data?.property?.company?.owner?.email) {
+      throw new Error("Error retrieving owner email");
     }
 
+    const email = data.property.company.owner.email;
+    const subject = "Transaction Cancelled";
+    const message = `A transaction for your unit in ${data.property.title} has been cancelled.`;
+    await notifyProprietor({email, subject, message});
+
+    console.log("Email sent to:", email);
     return true;
   } catch (error) {
-    console.error("An error occurred while cancelling the transaction:", error);
+    console.error("Error:", error.message);
     return false;
   }
 };

@@ -29,22 +29,31 @@ async function EditCompany({params}: {params: {companyId: string}}) {
     const company = await getCompanyById(params.companyId);
 
     return (
-        <div className="w-full">
-            <HostingContentLayout title="Edit company">
-                <CustomBreadcrumbs />
+			<div className='w-full'>
+				<HostingContentLayout>
+					<CustomBreadcrumbs />
 
-                <div className="mx-auto max-w-5xl py-11 grid grid-cols-1 gap-5">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Company Details</CardTitle>
-                            <CardDescription>Edit the company name and description here.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {company ? <EditCompanyForm companyId={params.companyId} company={company} /> : <span>Loading...</span>}
-                        </CardContent>
-                    </Card>
+					<div className='mx-auto py-4 grid grid-cols-1 gap-5'>
+						<Card className='bg-white dark:bg-secondary'>
+							<CardHeader>
+								<CardTitle>Company Details</CardTitle>
+								<CardDescription className='border-b border-gray-300 pb-3'>
+									Edit the company name and description here.
+								</CardDescription>
+							</CardHeader>
+							<CardContent>
+								{company ? (
+									<EditCompanyForm
+										companyId={params.companyId}
+										company={company}
+									/>
+								) : (
+									<span>Loading...</span>
+								)}
+							</CardContent>
+						</Card>
 
-                    <Card>
+						{/* <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center justify-between">
                                 <span>Business Permit</span>
@@ -62,8 +71,8 @@ async function EditCompany({params}: {params: {companyId: string}}) {
                                 </Badge>
                             </CardTitle>
                             <CardDescription className="text-destructive">Verify your business by uploading a business permit here.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex flex-row items-center justify-between">
+                        </CardHeader> */}
+						{/* <CardContent className="flex flex-row items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <FileUploader companyId={params.companyId} />
                                 <BusinessPermitDelete companyId={params.companyId} fileUrl={company?.business_permit} />
@@ -81,8 +90,8 @@ async function EditCompany({params}: {params: {companyId: string}}) {
                                     No file uploaded
                                 </div>
                             )}
-                        </CardContent>
-                    </Card>
+                        </CardContent> */}
+						{/* </Card>
 
                     <Card>
                         <CardHeader>
@@ -92,11 +101,11 @@ async function EditCompany({params}: {params: {companyId: string}}) {
                         <CardContent>
                             <EditCompanyAlert companyId={params.companyId} />
                         </CardContent>
-                    </Card>
-                </div>
-            </HostingContentLayout>
-        </div>
-    );
+                    </Card> */}
+					</div>
+				</HostingContentLayout>
+			</div>
+		);
 }
 
 export default EditCompany;

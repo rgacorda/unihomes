@@ -21,6 +21,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { fuzzyFilter } from "./fuzzy-filters";
 
 import PropertiesHeader from "../PropertiesHeader";
+import { DataTablePagination } from "./data-table-pagination";
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -56,7 +57,7 @@ function PropertiesTable<TData, TValue>({ columns, data }: DataTableProps<TData,
     const isDesktop = useMediaQuery("(min-width: 748px)");
 
     return (
-        <div>
+        <div className="h-full min-h-screen pb-11">
             <PropertiesHeader table={propertiesTable} />
             <div className="rounded-md border">
                 <Table>
@@ -64,27 +65,33 @@ function PropertiesTable<TData, TValue>({ columns, data }: DataTableProps<TData,
                         {propertiesTable.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => {
-                                    if (
-                                        !isDesktop &&
-                                        (header.column.columnDef.header === "Address" || header.column.columnDef.header === "Verified")
-                                    ) {
+                                    if (!isDesktop && (header.id === "address" || header.id === "isApproved" || header.id === "due_date")) {
                                         return null;
                                     }
                                     return (
                                         <TableHead key={header.id}>
-                                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                                            {header.isPlaceholder
+                                                ? null
+                                                : flexRender(header.column.columnDef.header, header.getContext())}
                                         </TableHead>
                                     );
                                 })}
                             </TableRow>
                         ))}
                     </TableHeader>
-                    <TableBody>
+                    <TableBody className="relative">
                         {propertiesTable.getRowModel().rows?.length ? (
                             propertiesTable.getRowModel().rows.map((row) => (
                                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                                     {row.getVisibleCells().map((cell) => {
-                                        return <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>;
+                                        if (!isDesktop && cell.id.match(/address|isApproved|action|due_date/)) {
+                                            return null;
+                                        }
+                                        return (
+                                            <TableCell key={cell.id}>
+                                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                            </TableCell>
+                                        );
                                     })}
                                 </TableRow>
                             ))
@@ -98,6 +105,7 @@ function PropertiesTable<TData, TValue>({ columns, data }: DataTableProps<TData,
                     </TableBody>
                 </Table>
             </div>
+            <DataTablePagination table={propertiesTable} />
         </div>
     );
 }

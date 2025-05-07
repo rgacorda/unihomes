@@ -1,7 +1,6 @@
-"use server";
-import { createClient } from "@/utils/supabase/server";
+"use client";
+import { createClient } from "@/utils/supabase/client";
 import { checkConversation } from "./checkConversation";
-
 const supabase = createClient();
 
 export async function contactProprietor(proprietorId: string) {
@@ -13,7 +12,6 @@ export async function contactProprietor(proprietorId: string) {
     }
     const userId = data.user?.id;
     await checkConversation(userId, proprietorId);
-
     return "/chat/inbox";
   } catch (error) {
     console.error("Error contacting proprietor:", error);

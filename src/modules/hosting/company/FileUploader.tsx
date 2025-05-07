@@ -8,9 +8,9 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, Di
 import Uppy from "@uppy/core";
 import { Dashboard } from "@uppy/react";
 import Tus from "@uppy/tus";
-
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
+
 import { createClient } from "@/utils/supabase/client";
 import useGetUser from "@/hooks/user/useGetUserId";
 import { addCompanyBusinessPermit } from "@/actions/company/addCompanyBusinessPermit";

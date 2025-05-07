@@ -8,13 +8,15 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { createClient } from "@/utils/supabase/client";
 import { BadgeCheck } from "lucide-react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
 import { PlusCircleIcon } from "lucide-react";
 import { toast } from "sonner";
 import sendImage from "@/actions/chat/sendImage";
+import { sendVideo } from "@/actions/chat/sendVideo"; // Updated import
+import imageCompression from "browser-image-compression"; // Import the compression library
 
 const supabase = createClient();
 
@@ -27,7 +29,9 @@ const Inbox = ({ receiver_id, company_name }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [expandedImage, setExpandedImage] = useState(null); 
+  const [expandedImage, setExpandedImage] = useState(null);
+  const [pendingMessages, setPendingMessages] = useState([]);
+  const [imageLoading, setImageLoading] = useState({});
   const messagesEndRef = useRef(null);
 
   const receiverNameMemo = useMemo(() => receiverName, [receiverName]);
@@ -92,47 +96,120 @@ const Inbox = ({ receiver_id, company_name }) => {
 
   const sendMessageHandler = useCallback(async (e) => {
     e.preventDefault();
-    await sendMessage({
-      userId: user.id,
-      receiverId: receiver_id,
-      conversationId,
-      messageContent,
-      setMessages,
-    });
+    const tempMessage = {
+      id: `temp-${Date.now()}`,
+      content: messageContent,
+      sender_id: user.id,
+      receiver_id,
+      status: "sending",
+    };
+
+    setPendingMessages((prev) => [...prev, tempMessage]);
     setMessageContent("");
+
+    try {
+      await sendMessage({
+        userId: user.id,
+        receiverId: receiver_id,
+        conversationId,
+        messageContent,
+        setMessages,
+      });
+
+      setPendingMessages((prev) => prev.filter((msg) => msg.id !== tempMessage.id));
+    } catch (error) {
+      toast.error("Failed to send the message.");
+      setPendingMessages((prev) =>
+        prev.map((msg) => (msg.id === tempMessage.id ? { ...msg, status: "error" } : msg))
+      );
+    }
   }, [user, receiver_id, conversationId, messageContent]);
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const file = event.target.files ? event.target.files[0] : null;
     if (!file) {
       toast.error("Please choose a file to upload");
       return;
     }
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WEBP).");
+
+    const allowedImageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const allowedVideoTypes = ["video/mp4", "video/avi", "video/mkv", "video/webm"];
+
+    if (![...allowedImageTypes, ...allowedVideoTypes].includes(file.type)) {
+      toast.error("Please upload a valid image or video file.");
       event.target.value = "";
       return;
     }
-    setSelectedFile(file);
+
+    const maxSize = 20 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error("File is too large. Please upload a smaller file.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.type.startsWith("image/")) {
+      try {
+        const options = {
+          maxWidthOrHeight: 800, // Max width/height for compression
+          useWebWorker: true,
+        };
+        const compressedFile = await imageCompression(file, options);
+        setSelectedFile(compressedFile);
+      } catch (error) {
+        toast.error("Error compressing the image.");
+      }
+    } else {
+      setSelectedFile(file);
+    }
   };
 
-  const submitImageHandler = useCallback(async (e) => {
+  const submitFileHandler = useCallback(async (e) => {
     e.preventDefault();
+  
+    if (!conversationId) {
+      toast.error("Conversation ID is not set.");
+      return;
+    }
+  
     if (selectedFile && user) {
       setLoading(true);
+  
       try {
-        await sendImage(user.id, receiver_id, conversationId, selectedFile);
-        toast.success("Image sent successfully!");
+        if (selectedFile.type.startsWith("image/")) {
+          // Pass arguments as separate parameters
+          await sendImage(user.id, receiver_id, conversationId, selectedFile, setMessages);
+          toast.success("Image sent successfully!");
+        } else if (selectedFile.type.startsWith("video/")) {
+          // Pass arguments as separate parameters
+          await sendVideo({
+            userId: user.id,
+            receiverId: receiver_id,
+            conversationId: conversationId,
+            videoFile: selectedFile,
+            setMessages: setMessages
+          });
+          toast.success("Video sent successfully!");
+        }
         setModalOpen(false);
       } catch (error) {
-        toast.error("Error sending image.");
+        toast.error("Error sending file.");
       } finally {
         setLoading(false);
         setSelectedFile(null);
       }
     }
   }, [selectedFile, user, receiver_id, conversationId]);
+  
+
+  const handleImageLoad = (id) => {
+    setImageLoading((prev) => ({ ...prev, [id]: false }));
+  };
+
+  const handleImageError = (id) => {
+    toast.error("Failed to load image.");
+    setImageLoading((prev) => ({ ...prev, [id]: false }));
+  };
 
   return (
     <Card className="w-full h-full bg-transparent">
@@ -157,22 +234,32 @@ const Inbox = ({ receiver_id, company_name }) => {
         )}
 
         <ScrollArea className="flex-1 p-4 rounded-lg mb-4 bg-transparent">
-          {messages.length === 0 ? (
-            <p className="text-center text-muted-foreground">No conversation selected.</p>
-          ) : (
-            messages.map((msg) => (
-              <div key={msg.id} className={`mb-2 max-w-xs p-2 rounded-lg text-sm break-words ${
-                msg.sender_id === user.id
-                  ? "ml-auto bg-primary text-primary-foreground"
-                  : "mr-auto bg-gray-300 text-gray-800"
-              }`}>
+          {messages.map((msg) => {
+            const isSystemGenerated = msg.system_generated === true;
+            const messageClasses = isSystemGenerated
+              ? "mx-auto italic text-center p-3 rounded-md shadow-md border border-dashed border-gray-400"
+              : msg.sender_id === user.id
+              ? "ml-auto bg-primary text-primary-foreground"
+              : "mr-auto bg-gray-300 text-gray-800";
+
+            return (
+              <div key={msg.id} className={`mb-2 max-w-xs p-2 rounded-lg text-sm break-words ${messageClasses}`}>
                 {msg.content.startsWith("http") ? (
-                  <img 
-                    src={msg.content} 
-                    alt="sent image" 
-                    className="rounded-md cursor-pointer" 
-                    onClick={() => setExpandedImage(msg.content)} 
-                  />
+                  msg.content.endsWith(".mp4") || msg.content.endsWith(".avi") || msg.content.endsWith(".mkv") || msg.content.endsWith(".webm") ? (
+                    <video className="rounded-md cursor-pointer" controls>
+                      <source src={msg.content} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <img
+                      src={msg.content}
+                      alt="sent media"
+                      className="rounded-md cursor-pointer"
+                      onLoad={() => handleImageLoad(msg.id)}
+                      onError={() => handleImageError(msg.id)}
+                      onClick={() => setExpandedImage(msg.content)}
+                    />
+                  )
                 ) : (
                   <p>{msg.content}</p>
                 )}
@@ -180,12 +267,21 @@ const Inbox = ({ receiver_id, company_name }) => {
                   {new Date(msg.created_at).toLocaleTimeString()}
                 </small>
               </div>
-            ))
-          )}
+            );
+          })}
+          {pendingMessages.map((msg) => (
+            <div
+              key={msg.id}
+              className="mb-2 max-w-xs p-2 rounded-lg text-sm break-words ml-auto bg-transparent border text-gray-600"
+            >
+              <p>
+                {msg.status === "sending" ? "Sending..." : "Failed to send"}
+              </p>
+            </div>
+          ))}
           <div ref={messagesEndRef} />
         </ScrollArea>
 
-    
         {expandedImage && (
           <Dialog open={!!expandedImage} onOpenChange={() => setExpandedImage(null)}>
             <DialogContent>
@@ -203,15 +299,16 @@ const Inbox = ({ receiver_id, company_name }) => {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle >Send an image</DialogTitle>
+                <DialogTitle>Send a file</DialogTitle>
               </DialogHeader>
+              <DialogDescription>Images and videos up to 20MB are supported.</DialogDescription>
               <div className="grid gap-4 py-4">
                 <div className="grid items-center">
-                  <Input id="file-input" type="file" className="col-span-3 rounded-full bg-secondary " onChange={handleFileChange} />
+                  <Input id="file-input" type="file" className="col-span-3 rounded-full bg-secondary" onChange={handleFileChange} />
                 </div>
               </div>
               <DialogFooter>
-                <Button type="button" onClick={submitImageHandler} disabled={loading}>
+                <Button type="button" onClick={submitFileHandler} disabled={loading}>
                   {loading ? "Sending..." : "Send"}
                 </Button>
               </DialogFooter>

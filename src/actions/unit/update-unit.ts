@@ -1,31 +1,235 @@
 "use server";
 
-import { CreateUnitType } from "@/lib/schemas/propertySchema";
-import { createClient } from "@/utils/supabase/server"
-import { redirect } from "next/navigation";
+import { createClient } from "@/utils/supabase/server";
+import { permanentRedirect, redirect } from "next/navigation";
+import { addUnitImages } from "./unitImage";
 
-export async function updateUnit(unitId: string, values: CreateUnitType) {
+export async function updateUnit(unitId: string, propertyId: string, values: any, fileUrls: any) {
     const supabase = createClient();
 
-    const { data, error } = await supabase
+    const { data: unitData, error: unitError } = await supabase
         .from("unit")
         .update({
-            description: values.unit_description,
-            property_id: values.property_id,
-            title: values.unit_title,
-            privacy_type: values.unit_type,
-            structure: values.unit_structure,
-            bedrooms: values.unit_bedrooms,
-            beds: values.unit_beds,
-            occupants: values.unit_occupants,
+            property_id: propertyId,
+            title: values.title,
+            price: values.price,
+            privacy_type: values.privacy_type,
+            bedrooms: values.bedrooms,
+            beds: values.beds,
+            occupants: values.occupants,
+            room_size: values.room_size,
         })
         .eq("id", unitId)
         .select();
-    
+
+    if (unitError?.code) {
+        throw unitError;
+    }
+
+    await insertAmenities(values.amenities, unitId);
+    await addUnitImages(fileUrls, unitId);
+    console.log(fileUrls, "fileUrls in update unit action");
+    redirect(`/hosting/properties/${propertyId}/details/units`);
+}
+
+export async function createDuplicateUnit(propertyId: string, values: any, numberOfUnits: number) {
+    const supabase = createClient();
+    // console.log(values, "action values")
+    if (typeof numberOfUnits !== "number" || isNaN(numberOfUnits)) {
+        throw new Error("numberOfUnits must be a valid number.");
+    }
+
+    if (numberOfUnits < 1 || numberOfUnits > 10) {
+        throw new Error("numberOfUnits must be between 1 and 10 inclusive.");
+    }
+
+    if (/[^0-9]/.test(String(numberOfUnits))) {
+        throw new Error("numberOfUnits cannot contain special characters.");
+    }
+
+    const unitsToInsert = Array(numberOfUnits).fill({
+        property_id: propertyId,
+        price: values.price,
+        title: values.title,
+        privacy_type: values.privacy_type,
+        bedrooms: values.bedrooms,
+        beds: values.beds,
+        occupants: values.occupants,
+        outside_view: values.outside_view,
+        room_size: values.room_size,
+    });
+
+    try {
+        const { data, error } = await supabase.from("unit").insert(unitsToInsert).select();
         if (error?.code) {
             throw error;
         }
-        
-        redirect(`/hosting/unit/`);
+
+        const unitIds = data.map((unit: any) => unit.id);
+
+        for (const unit of data) {
+            // Update the unit title with the unit ID
+            await supabase.from("unit").update({ title: values.title }).eq("id", unit.id);
     
+            // Insert amenities and images
+            await insertAmenities(values.amenities, unit.id);
+            await inserAdditionalAmenities(values.additional_amenities, unit.id);
+        }
+
+        return unitIds;
+    } catch (error: any) {
+        console.log(error);
+        throw error;
+    }
+}
+
+const insertAmenities = async (data: { value: string; label: string }[], unitId: string) => {
+    const supabase = createClient();
+
+    const amenities_insert = data.map(({ value }: { value: string }) => ({
+        unit_id: unitId,
+        amenity_id: value,
+    }));
+
+    const { data: unitAmenitiesData, error: unitAmenitiesError } = await supabase.from("unit_amenities").insert(amenities_insert).select();
+
+    if (unitAmenitiesError?.code) {
+        throw unitAmenitiesData;
+    }
+};
+
+export async function inserAdditionalAmenities(additional_amenities: {id: any; text: string;}[], unitId: string) {
+    // console.log(additional_amenities, "action additional amenities")
+    const supabase = createClient();
+    try {
+        await supabase.from("unit_additional_amenities").delete().eq("unit_id", unitId);
+
+        const additional_amenities_insert = additional_amenities.map(({ text }: { text: string }) => ({
+            unit_id: unitId,
+            amenity_name: text,
+        }));
+
+        const { error: additionalAmenityError } = await supabase.from("unit_additional_amenities").insert(additional_amenities_insert   );
+
+        if (additionalAmenityError?.code) {
+            throw additionalAmenityError;
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        throw error;
+    }
+}
+
+export const toggleIsReserved = async (unitId: string, isReserved: boolean) => {
+    const supabase = createClient();
+
+    const { data, error } = await supabase.from("unit").update({ isReserved: isReserved }).eq("id", unitId).select();
+
+    if (error?.code) {
+        throw error;
+    }
+
+    return data;
+};
+
+export async function updateUnitTitle(unitId: string, title: string) {
+    const supabase = createClient();
+    try {
+        const { data, error } = await supabase.from("unit").update({ title: title }).eq("id", unitId);
+        if (error?.code) {
+            throw error;
+        }
+        // this is the updated data that is sent to supabase bro
+        return data;
+    } catch (error: any) {
+        throw error;
+    }
+}
+
+export async function updateUnitType(unitId: string, values: any) {
+    const supabase = createClient();
+    try {
+        const { data, error } = await supabase
+            .from("unit")
+            .update({ privacy_type: values.privacy_type, room_size: values.room_size })
+            .eq("id", unitId);
+        if (error?.code) {
+            throw error;
+        }
+
+        return data;
+    } catch (error: any) {
+        throw error;
+    }
+}
+
+export async function updateUnitSpecifications(unitId: string, values: any) {
+    const supabase = createClient();
+    try {
+        const { data, error } = await supabase
+            .from("unit")
+            .update({ beds: values.beds, bedrooms: values.bedrooms, occupants: values.occupants })
+            .eq("id", unitId);
+        if (error?.code) {
+            throw error;
+        }
+
+        return data;
+    } catch (error: any) {
+        throw error;
+    }
+}
+
+export async function updateUnitAmenities(unitId: string, values: any) {
+    console.log(values);
+    const supabase = createClient();
+    try {
+        await supabase.from("unit_amenities").delete().eq("unit_id", unitId);
+
+        const newAmenities = values.amenities.map(({ value }: { value: any }) => ({
+            unit_id: unitId,
+            amenity_id: value,
+        }));
+
+        const { error: amenityError  } = await supabase.from("unit_amenities").insert(newAmenities);
+
+        await supabase.from("unit_additional_amenities").delete().eq("unit_id", unitId);
+
+        const newAdditionalAmenities = values.additional_amenities.map(({ text }: { text: string }) => ({
+            unit_id: unitId,
+            amenity_name: text,
+        }));
+
+        if (amenityError?.code) {
+            throw amenityError;
+        }
+
+        const { error: additionalAmenityError } = await supabase.from("unit_additional_amenities").insert(newAdditionalAmenities);
+
+        if (additionalAmenityError?.code) {
+            throw additionalAmenityError;
+        }
+
+        return { success: true };
+    } catch (error: any) {
+        throw error;
+    }
+}
+
+export async function updateUnitPrice(unitId: string, values: any) {
+    const supabase = createClient();
+    try {
+        const { data, error } = await supabase
+            .from("unit")
+            .update({ price: values.price })
+            .eq("id", unitId);
+        if (error?.code) {
+            throw error;
+        }
+
+        return data;
+    } catch (error: any) {
+        throw error;
+    }
 }

@@ -26,7 +26,8 @@ export async function updateSession(request: NextRequest) {
     // issues with users being randomly logged out.
     
     const authPaths = ['/register', '/login', '/forgot-password', '/reset-password'];
-    const protectedPaths = ['/hosting']
+    const protectedPaths = [/^\/hosting(\/.*)?$/,]; //regex for /hosting/**/*
+    const protectedAdminPaths = [/^\/administrator(\/.*)?$/,]; //regex for /admin/**/*
 
     const {data: { user }} = await supabase.auth.getUser();
 
@@ -34,12 +35,46 @@ export async function updateSession(request: NextRequest) {
     const redirectedFrom = url.searchParams.get("redirectedFrom");
 
     if (user) {
+        const { data: role, error } = await supabase
+            .from("account")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+
+        
+        // Redirect proprietors away from `/administrator`
+        if (role.role === "Proprietor") {
+            if (protectedAdminPaths.some((regex) => regex.test(url.pathname))) {
+                return NextResponse.redirect(new URL("/", request.url));
+            }
+        }
+
+        // Redirect clients away from `/hosting` and `/administrator`
+        if (role.role === "Client") {
+            if (
+                protectedPaths.some((regex) => regex.test(url.pathname)) ||
+                protectedAdminPaths.some((regex) => regex.test(url.pathname))
+            ) {
+                return NextResponse.redirect(new URL("/", request.url));
+            }
+        }
+
+        // Redirect admins away from all other paths except `/administrator`
+        if (role.role === "Admin") {
+            if (!protectedAdminPaths.some((regex) => regex.test(url.pathname))) {
+                return NextResponse.redirect(new URL("/administrator/dashboard", request.url));
+            }
+        }
+
         if (authPaths.includes(url.pathname)) {
             return NextResponse.redirect(new URL('/', request.url));
         }
         return supabaseResponse;
     } else {
-        if (protectedPaths.includes(url.pathname)) {
+        const isProtected =
+            protectedPaths.some((regex) => regex.test(url.pathname)) ||
+            protectedAdminPaths.some((regex) => regex.test(url.pathname));
+        if (isProtected) {
             return NextResponse.redirect(new URL(`/login?redirectedFrom=${redirectedFrom || url.pathname}`, request.url));
         }
         return supabaseResponse;

@@ -6,12 +6,11 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Map, MinusCircle, PlusCircle, SearchIcon } from 'lucide-react';
+import { MinusCircle, PlusCircle, SearchIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -21,6 +20,7 @@ import {
 	Marker,
 	MarkerClusterer,
 	StandaloneSearchBox,
+	InfoWindow,
 } from '@react-google-maps/api';
 import { Slider as RadiusSlider } from '@/components/ui/slider';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,6 +28,7 @@ import { Slider as PriceSlider } from '@nextui-org/slider';
 import { MdOutlineMyLocation } from 'react-icons/md';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
+import Link from 'next/link';
 
 const householdPrivacyTypes = [
 	{ value: 'Private Room', label: 'Private Room' },
@@ -57,6 +58,8 @@ const reviewScore = [
 ];
 
 export default function FilterModal({
+	setIsOpen,
+	isOpen,
 	householdAmenities = [],
 	selectedFilter,
 	setSelectedFilter,
@@ -84,9 +87,9 @@ export default function FilterModal({
 	setPosition,
 	radius,
 	setRadius,
-	setDeviceLocation
+	setDeviceLocation,
 }) {
-	const [isOpen, setIsOpen] = useState(false);
+	// const [isOpen, setIsOpen] = useState(false);
 
 	const increment = (value, setter) => setter(value + 1);
 	const decrement = (value, setter) => setter(value > 0 ? value - 1 : 0);
@@ -155,7 +158,7 @@ export default function FilterModal({
 		setCircleLoc({
 			lat: 0.2342,
 			lng: 0.2342,
-		})
+		});
 	}, [isOpen]);
 
 	const handlePlaceSelection = () => {
@@ -198,7 +201,7 @@ export default function FilterModal({
 
 	const handleMapClick = async (event) => {
 		if (event.latLng) {
-			setDeviceLocation(null)
+			setDeviceLocation(null);
 			const { lat, lng } = event.latLng.toJSON();
 			setSelectedLocation({ lat, lng });
 			setCircleLoc({ lat, lng });
@@ -245,18 +248,18 @@ export default function FilterModal({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
+			{/* <DialogTrigger asChild>
 				<Button
 					variant='outline'
-					className='mb-2 px-4 py-2 rounded-lg transition-all'
-					onClick={() => {setIsOpen(true)}}
+					className='mb-2 px-4 py-2 rounded-lg transition-all hidden sm:block'
+					onClick={() => setIsOpen(true)}
 				>
 					<div className='flex items-center space-x-2'>
 						<Map className='w-4 h-auto ' />
 						<span className='font-semibold'>Check Map</span>
 					</div>
 				</Button>
-			</DialogTrigger>
+			</DialogTrigger> */}
 
 			<DialogContent className='max-w-[90%] xs:h-[450px] md:h-[500px] lg:h-[80%] bg-white dark:bg-secondary rounded-lg shadow-lg'>
 				<DialogHeader className=''>
@@ -314,13 +317,11 @@ export default function FilterModal({
 							>
 								{selectedLocation && (
 									<>
-										<Marker 
-											position={selectedLocation} 
-											options={
-												{
-													icon: 'https://maps.google.com/mapfiles/ms/micons/blue-dot.png'
-												}
-											} 
+										<Marker
+											position={selectedLocation}
+											options={{
+												icon: 'https://maps.google.com/mapfiles/ms/micons/blue-dot.png',
+											}}
 										/>
 									</>
 								)}
@@ -341,7 +342,32 @@ export default function FilterModal({
 													}}
 													clusterer={clusterer}
 													onClick={() => handleMarkerClick(listing)}
-												/>
+												>
+													{selectedListing?.id === listing.id && (
+														<InfoWindow position={{ lat: listing.latitude, lng: listing.longitude }}>
+															<div className='flex flex-col'>
+																<img
+																	src={listing.property_image}
+																	alt={listing.title}
+																	className='w-full h-48 object-cover'
+																/>
+																<Link href={`/property/${listing.id}`} className='mt-2 font-bold text-lg text-primary underline'>{listing.title}</Link>
+																<div className='flex flex-row items-center mt-1'>
+																	<span className='font-bold mr-1'>Price:</span>
+																	<span className='text-sm'>Starts at {listing.minimum_price}php</span>
+																</div>
+																<div className='mt-1'>
+																	<span className='font-bold mr-1'>Company:</span>
+																	<span>{listing.company_name}</span>
+																</div>
+																<div className='mt-1'>
+																	<span className='font-bold mr-1'>Address:</span>
+																	<span>{listing.address}</span>
+																</div>
+															</div>
+														</InfoWindow>
+													)}
+												</Marker>
 											))}
 										</>
 									)}
@@ -476,7 +502,7 @@ export default function FilterModal({
 								<PriceSlider
 									step={100}
 									minValue={0}
-									maxValue={30000}
+									maxValue={100000}
 									value={[popUpMinPrice, popUpMaxPrice]}
 									onChange={(value) => {
 										setPopUpMinPrice(value[0]);

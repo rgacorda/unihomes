@@ -7,10 +7,9 @@ const spiels = {
 	ADMIN_MODAL_HEADER: 'New Proprietors Approval',
 
 	// Home
-	CTA_LABEL: 'Call to Action',
+	CTA_LABEL: 'Got any queries?',
 	CTA_DESCRIPTION: [
-		'Stay in the loop with UniHomes! Sign up with your email to receive the latest updates.',
-		'Don’t miss out — join our community today!',
+		'Enter your email and our customer support team will get back to you as soon as we can.',
 	],
 	FOOTER: '© 2024 UniHomes',
 	HERO_BADGE: 'New Release',
@@ -107,7 +106,7 @@ const spiels = {
 	BUTTON_SIGN_IN: 'Sign In',
 	BUTTON_SIGN_UP: 'Sign Up',
 	BUTTON_SUBMIT: 'Submit',
-	BUTTON_SUBSCRIBE: 'Subscribe',
+	BUTTON_SUBSCRIBE: 'Send Email',
 	BUTTON_VIEW: 'View',
 	BUTTON_VIEW_ALL: 'View all',
 	BUTTON_SHOW_LISTINGS: 'Show Listings',
@@ -218,9 +217,9 @@ const spiels = {
 			value: 'overview',
 		},
 		{
-			label: 'Rooms',
-			href: '/rooms',
-			value: 'rooms',
+			label: 'Units',
+			href: '/units',
+			value: 'units',
 		},
 		{
 			label: 'Reviews',
@@ -232,15 +231,20 @@ const spiels = {
 			href: '/location',
 			value: 'location',
 		},
+		{
+			label: 'House Rules',
+			href: '/houserules',
+			value: 'houserules',
+		},
 	],
 	//MODALS
 	MODAL_APPROVE: 'Confirm Approval',
-	MODAL_APPROVE_HEADER: 'Are you sure you want to approve this lessor?',
+	MODAL_APPROVE_HEADER: 'Are you sure you want to approve this proprietor?',
 	MODAL_APPROVE_COMPANY_HEADER:
-		'Are you sure you want to approve this company?',
+		'Are you sure you want to approve this property?',
 	MODAL_REJECT: 'Confirm Rejection',
-	MODAL_REJECTION_HEADER: 'Are you sure you want to reject this lessor?',
-	MODAL_REJECT_COMPANY_HEADER: 'Are you sure you want to reject this company?',
+	MODAL_REJECTION_HEADER: 'Are you sure you want to reject this proprietor?',
+	MODAL_REJECT_PROPERTY_HEADER: 'Are you sure you want to reject this property?',
 	MODAL_KEEP: 'Confirm Keep',
 	MODAL_REMOVE: 'Confirm Remove',
 	MODAL_KEEP_HEADER: 'Are you sure you want to keep this review?',

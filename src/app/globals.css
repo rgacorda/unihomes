@@ -18,6 +18,18 @@ body {
     background-size: 20px 20px, cover;
     background-blend-mode: overlay;
   }
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .custom-translate3d {
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @layer base {
@@ -96,6 +108,8 @@ body {
 @layer base {
   * {
     @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
   }
 
   body {
@@ -104,6 +118,28 @@ body {
 
   .field-sizing {
     field-sizing: content;
+  }
+
+  .pricing-input input[type="number"] {
+      appearance: textfield; /* Removes default appearance */
+      -moz-appearance: textfield; /* Removes spinners in Firefox */
+  }
+
+  .pricing-input input[type="number"]::-webkit-outer-spin-button,
+  .pricing-input input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none; /* Removes spinners in WebKit browsers */
+      margin: 0; /* Ensures no extra margin is added */
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 5px;
   }
 }
 
@@ -155,5 +191,82 @@ body {
 
 .uppy-Dashboard-inner {
   width: auto !important;
-  height: 22rem !important;
+}
+
+/* Expanding search bar */
+.search-container {
+  width: 40px;
+  height: 40px;
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  transition: width 0.5s ease-in-out;
+  overflow: hidden;
+}
+
+.search-container input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  padding-left: 30px;
+  padding-right: 10px;
+  border-radius: 0.5rem;
+  opacity: 0;
+  transition: width 0.2s ease-in-out, opacity 0.5s ease-in-out;
+}
+
+.search-container:hover {
+  width: 400px;
+}
+
+.search-container:hover input {
+  width: 100%;
+  opacity: 1;
+}
+
+@media (max-width: 1024px) {
+
+  .search-container {
+    width: 40px;
+  }
+
+  .search-container:hover {
+    width: 250px;
+  }
+
+  .search-container:hover input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 478px) {
+  .search-container {
+    width: 40px;
+  }
+
+  .search-container:hover {
+    width: 150px;
+  }
+
+  .search-container:hover input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 375px) {
+  .search-container {
+    width: 40px;
+  }
+
+  .search-container:hover {
+    width: 120px;
+  }
+
+  .search-container:hover input {
+    width: 100%;
+  }
 }

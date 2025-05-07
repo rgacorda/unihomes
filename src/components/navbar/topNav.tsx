@@ -19,6 +19,8 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AiOutlineUserSwitch } from 'react-icons/ai';
+
 import {
 	Sheet,
 	SheetClose,
@@ -39,7 +41,6 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 
 import {
 	Home,
-	LayoutDashboard,
 	LogOut,
 	Menu,
 	MessageCircleMore,
@@ -60,7 +61,8 @@ function NavigationBar() {
     */
 	const [user, setUser] = React.useState<User | null>(null);
 	const [open, setOpen] = React.useState<boolean>(false);
-	const isDesktop = useMediaQuery('(min-width: 950px)');
+	const [profileUrl, setProfileUrl] = React.useState<string | null>(null);
+	const isDesktop = useMediaQuery('(min-width: 980px)');
 
 	const pathname = usePathname();
 
@@ -86,6 +88,32 @@ function NavigationBar() {
 		};
 	}, []);
 
+	React.useEffect(() => {
+		const { auth } = createClient();
+
+		const fetchUserData = async () => {
+			const { data } = await auth.getSession();
+			if (data.session) {
+				const userId = data.session.user.id;
+
+				// Fetch profile_url from the Supabase database
+				const { data: profileData, error } = await createClient()
+					.from('account')
+					.select('profile_url')
+					.eq('id', userId)
+					.single();
+
+				if (profileData && !error) {
+					setProfileUrl(profileData.profile_url);
+				}
+
+				setUser(data.session.user);
+			}
+		};
+
+		fetchUserData();
+	}, []);
+
 	// for scrolling while mobile
 	React.useEffect(() => {
 		if (open) {
@@ -100,7 +128,7 @@ function NavigationBar() {
 
 	return (
 		<nav className='py-3 sticky z-[999] airBnbDesktop:z-999 top-0 w-full bg-white/95 shadow backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-background'>
-			<div className='w-full grid grid-flow-col px-5'>
+			<div className='w-full grid md1:grid-cols-3 grid-flow-col px-5'>
 				<div className='flex flex-nowrap items-center justify-start h-11'>
 					<Image
 						src='/Logo.png'
@@ -192,7 +220,7 @@ function NavigationBar() {
 							</li>
 						</ul>
 
-						<div className='flex flex-nowrap items-center justify-end gap-2'>
+						<div className='flex flex-nowrap items-center justify-end gap-5'>
 							{/* Notification here */}
 
 							<ModeToggle />
@@ -202,7 +230,7 @@ function NavigationBar() {
 								<DropdownMenu modal={false}>
 									<DropdownMenuTrigger className='rounded-full'>
 										<Avatar className='w-9 h-9 select-none'>
-											<AvatarImage src='' />
+											<AvatarImage src={profileUrl || ''} alt='User Avatar' />
 											<AvatarFallback className='text-base leading-none font-normal bg-primary text-white dark:text-foreground'>
 												{user?.user_metadata.firstname.charAt(0).toUpperCase()}
 												{user?.user_metadata.lastname.charAt(0).toUpperCase()}
@@ -212,7 +240,7 @@ function NavigationBar() {
 									<DropdownMenuContent
 										side='bottom'
 										align='end'
-										className='border-gray-200 border-1 w-full min-w-56 px-0 pt-3 bg-white z-[999] shadow-xl'
+										className='border-gray-200 border-1 w-full min-w-56 px-0 pt-3 bg-white dark:bg-secondary z-[999] shadow-xl'
 										forceMount
 									>
 										<DropdownMenuLabel className='font-normal'>
@@ -242,19 +270,47 @@ function NavigationBar() {
 												}}
 											>
 												<IconExchange className='mr-2 h-4 w-4' />
-												<span>Transaction History</span>
+												<span>Transactions</span>
 											</DropdownMenuItem>
 										</DropdownMenuGroup>
 										<DropdownMenuSeparator />
 										<DropdownMenuGroup>
 											<DropdownMenuItem
-												onClick={() => {
-													window.location.href = '/dashboard';
+												onClick={async () => {
+													const supabase = createClient();
+													const { data, error } = await supabase
+														.from('account')
+														.select('role')
+														.eq('id', user.id)
+														.single();
+
+													if (error) {
+														console.error(
+															'Error fetching approval status:',
+															error
+														);
+														return;
+													}
+
+													if (data?.role === 'Proprietor') {
+														window.location.href = '/hosting';
+													} else {
+														window.location.href = '/client/profile';
+													}
 												}}
 											>
-												<LayoutDashboard className='mr-2 h-4 w-4' />
-												<span>My Lessor Dashboard</span>
+												<AiOutlineUserSwitch className='mr-2 h-4 w-4' />
+												<span>Switch to Hosting View</span>
 											</DropdownMenuItem>
+
+											{/* <DropdownMenuItem
+												onClick={() => {
+													window.location.href = '/hosting';
+												}}
+											>
+												<AiOutlineUserSwitch className='mr-2 h-4 w-4' />
+												<span>Switch to Hosting View</span>
+											</DropdownMenuItem> */}
 										</DropdownMenuGroup>
 										<DropdownMenuSeparator />
 										<DropdownMenuItem
@@ -271,15 +327,6 @@ function NavigationBar() {
 							) : (
 								<div className='flex flex-nowrap items-center justify-end gap-2'>
 									<Link
-										href='/register'
-										className={cn(
-											buttonVariants({ variant: 'default' }),
-											'rounded-lg'
-										)}
-									>
-										Sign up
-									</Link>
-									<Link
 										href='/login'
 										className={cn(
 											buttonVariants({ variant: 'outline' }),
@@ -288,13 +335,21 @@ function NavigationBar() {
 									>
 										Login
 									</Link>
+									<Link
+										href='/register'
+										className={cn(
+											buttonVariants({ variant: 'default' }),
+											'rounded-lg'
+										)}
+									>
+										Sign up
+									</Link>
 								</div>
 							)}
 						</div>
 					</>
 				) : (
 					// mobile view
-
 					<div className='flex flex-nowrap items-center justify-end gap-2'>
 						<>
 							<ModeToggle />
@@ -316,7 +371,7 @@ function NavigationBar() {
 								</Button>
 							</SheetTrigger>
 							<SheetContent
-								className={`h-[calc(100vh-80px)] mt-[calc(80px-12px)] py-0 bg-white ${
+								className={`h-[calc(100vh-80px)] mt-[calc(80px-12px)] py-0 bg-white dark:bg-background ${
 									open ? '' : ''
 								}`}
 								side='top'
@@ -325,21 +380,18 @@ function NavigationBar() {
 									<SheetClose className='sr-only'>Close</SheetClose>
 									<SheetHeader className='sr-only'>
 										<SheetTitle>Navigation menu</SheetTitle>
-										<SheetDescription>
-											This action cannot be undone. This will permanently delete
-											your account and remove your data from our servers.
-										</SheetDescription>
+										<SheetDescription>Mobile navigation menu.</SheetDescription>
 									</SheetHeader>
 									<div className='grid gap-8 py-7'>
 										{/* menu */}
 										<ul className='flex flex-col gap-2 [&_svg]:size-6'>
 											<li className='mb-2'>MENU</li>
-											<li>
+											<li className=''>
 												<Link
 													href={`/`}
 													className={cn(
 														buttonVariants({ variant: 'ghost' }),
-														'w-full justify-start rounded-none px-0 gap-2'
+														'w-full justify-start rounded-lg px-0 gap-2 hover:rounded-lg hover:p-1 transition-all duration-300'
 													)}
 												>
 													<Home /> Home
@@ -350,7 +402,7 @@ function NavigationBar() {
 													href={`/client/listings`}
 													className={cn(
 														buttonVariants({ variant: 'ghost' }),
-														'w-full justify-start rounded-none px-0 gap-2'
+														'w-full justify-start rounded-lg px-0 gap-2 hover:rounded-lg hover:p-1 transition-all duration-300'
 													)}
 												>
 													<Scroll />
@@ -364,7 +416,7 @@ function NavigationBar() {
 															href={`/chat/inbox`}
 															className={cn(
 																buttonVariants({ variant: 'ghost' }),
-																'w-full justify-start rounded-none px-0 gap-2'
+																'w-full justify-start rounded-lg px-0 gap-2 hover:rounded-lg hover:p-1 transition-all duration-300'
 															)}
 														>
 															<MessageCircleMore />
@@ -376,7 +428,7 @@ function NavigationBar() {
 															href={`/client/favorites`}
 															className={cn(
 																buttonVariants({ variant: 'ghost' }),
-																'w-full justify-start rounded-none px-0 gap-2'
+																'w-full justify-start rounded-lg px-0 gap-2 hover:rounded-lg hover:p-1 transition-all duration-300'
 															)}
 														>
 															<Heart />
@@ -390,7 +442,7 @@ function NavigationBar() {
 													href={`/pricing`}
 													className={cn(
 														buttonVariants({ variant: 'ghost' }),
-														'w-full justify-start rounded-none px-0 gap-2'
+														'w-full justify-start rounded-lg px-0 gap-2 hover:rounded-lg hover:p-1 transition-all duration-300'
 													)}
 												>
 													<Wallet />
@@ -410,7 +462,7 @@ function NavigationBar() {
 															href={`/client/profile`}
 															className={cn(
 																buttonVariants({ variant: 'ghost' }),
-																'w-full justify-start rounded-none px-0 gap-2'
+																'w-full justify-start rounded-lg px-0 gap-2 hover:rounded-lg hover:p-1 transition-all duration-300'
 															)}
 														>
 															<UserIcon /> Profile
@@ -421,11 +473,11 @@ function NavigationBar() {
 															href={`/client/transaction_history`}
 															className={cn(
 																buttonVariants({ variant: 'ghost' }),
-																'w-full justify-start rounded-none px-0 gap-2'
+																'w-full justify-start rounded-lg px-0 gap-2 hover:rounded-lg hover:p-1 transition-all duration-300'
 															)}
 														>
 															<IconExchange />
-															Transaction History
+															Transactions
 														</Link>
 													</li>
 													<li>
@@ -433,11 +485,11 @@ function NavigationBar() {
 															href={`/hosting`}
 															className={cn(
 																buttonVariants({ variant: 'ghost' }),
-																'w-full justify-start rounded-none px-0 gap-2'
+																'w-full justify-start rounded-lg px-0 gap-2 hover:rounded-lg hover:p-1 transition-all duration-300'
 															)}
 														>
-															<LayoutDashboard />
-															My Lessor Dashboard
+															<AiOutlineUserSwitch />
+															Switch to Hosting
 														</Link>
 													</li>
 												</ul>
@@ -456,7 +508,7 @@ function NavigationBar() {
 											</>
 										) : (
 											// Show sign up and login buttons when not logged in
-											<div className='flex flex-col gap-2 [&_svg]:size-6 items-center'>
+											<div className='grid grid-cols-1 sm:grid-cols-2 gap-4 items-center'>
 												<Link
 													href='/register'
 													className={cn(
@@ -464,7 +516,16 @@ function NavigationBar() {
 														'w-full justify-center rounded-lg px-2 gap-2 text-center'
 													)}
 												>
-													Sign up
+													Sign Up
+												</Link>
+												<Link
+													href='/login'
+													className={cn(
+														buttonVariants({ variant: 'outline' }),
+														'w-full justify-center rounded-lg px-2 gap-2 text-center'
+													)}
+												>
+													Log In
 												</Link>
 											</div>
 										)}

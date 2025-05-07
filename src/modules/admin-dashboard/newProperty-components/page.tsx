@@ -22,22 +22,34 @@ const PropertyListingsDashboard: React.FC<PropertyListingsDashboardProps> = ({
 
   const fetchPropertyListings = async () => {
     try {
-      const { data: fetchedListings, error } = await supabase.from("property")
-        .select(`id, 
+      const { data: fetchedListings, error } = await supabase
+        .from("property")
+        .select(`
+          id,
           title,
-          company (
+          company:company (
             company_name,
             owner:owner_id (
               firstname,
-              lastname
+              lastname,
+              id
             )
           ),
           business_permit,
           fire_inspection,
           created_at,
           isApproved,
-          due_date
-        `);
+          due_date,
+          updated_at
+        `)
+        .in("isApproved", ["pending", "approved", "rejected"])
+        .order("isApproved", {
+          ascending: true,
+        })
+        .order("isApproved", {
+          ascending: false,
+          nullsFirst: true,
+        })
 
       if (error) {
         console.error("Error fetching property listings:", error);
@@ -47,8 +59,11 @@ const PropertyListingsDashboard: React.FC<PropertyListingsDashboardProps> = ({
       return (
         fetchedListings?.map((listing) => ({
           id: listing.id,
-          company_name: listing.company.company_name,
-          proprietor_name: `${listing.company.owner.firstname} ${listing.company.owner.lastname}`,
+          ownerId: listing.company?.owner?.id || "",
+          company_name: listing.company?.company_name || "N/A",
+          proprietor_name: listing.company?.owner
+            ? `${listing.company.owner.firstname} ${listing.company.owner.lastname}`
+            : "N/A",
           property_title: listing.title,
           businessPermitUrl: listing.business_permit,
           fireInspectionUrl: listing.fire_inspection,
@@ -58,7 +73,10 @@ const PropertyListingsDashboard: React.FC<PropertyListingsDashboardProps> = ({
           dueDate: listing.due_date
             ? format(new Date(listing.due_date), "MMMM dd, yyyy")
             : "N/A",
-          isApproved: listing.isApproved || false,
+          isApproved: listing.isApproved,
+          updatedAt: listing.updated_at
+            ? format(new Date(listing.updated_at), "MMMM dd, yyyy")
+            : "",
         })) || []
       );
     } catch (error) {
@@ -69,20 +87,27 @@ const PropertyListingsDashboard: React.FC<PropertyListingsDashboardProps> = ({
 
   const handlePropertyUpdate = async (
     propertyId: string,
-    isApproved: boolean
+    isApproved: any,
   ) => {
     try {
-      const updates: { isApproved: boolean; due_date?: string | null } = {
-        isApproved,
+      const updates: {
+        isApproved: any;
+        due_date?: string | null;
+      } = {
+        isApproved
       };
 
-      if (isApproved) {
+      if (isApproved === "approved") {
         const dueDate = new Date();
         dueDate.setFullYear(dueDate.getFullYear() + 2);
-        updates.due_date = dueDate.toISOString();
+        updates.due_date = dueDate.toISOString().slice(0, 10); 
+
+
       } else {
         updates.due_date = null;
       }
+
+      console.log("Updates being sent to Supabase:", updates);
 
       const { error } = await supabase
         .from("property")
@@ -90,7 +115,7 @@ const PropertyListingsDashboard: React.FC<PropertyListingsDashboardProps> = ({
         .eq("id", propertyId);
 
       if (error) {
-        console.error("Error updating approval status:", error);
+        console.error("Error updating property status:", error);
         return;
       }
 
@@ -112,20 +137,23 @@ const PropertyListingsDashboard: React.FC<PropertyListingsDashboardProps> = ({
       const { data: updatedProperty, error } = await supabase
         .from("property")
         .select(
-          `id, 
+          `
+          id,
           title,
-          company (
+          company:company (
             company_name,
             owner:owner_id (
               firstname,
-              lastname
+              lastname,
+              id
             )
           ),
           business_permit,
           fire_inspection,
           created_at,
           isApproved,
-          due_date
+          due_date,
+          updated_at
         `
         )
         .eq("id", propertyId)
@@ -138,8 +166,11 @@ const PropertyListingsDashboard: React.FC<PropertyListingsDashboardProps> = ({
 
       return {
         id: updatedProperty.id,
-        company_name: updatedProperty.company.company_name,
-        proprietor_name: `${updatedProperty.company.owner.firstname} ${updatedProperty.company.owner.lastname}`,
+        ownerId: updatedProperty.company?.owner?.id || "",
+        company_name: updatedProperty.company?.company_name || "N/A",
+        proprietor_name: updatedProperty.company?.owner
+          ? `${updatedProperty.company.owner.firstname} ${updatedProperty.company.owner.lastname}`
+          : "N/A",
         property_title: updatedProperty.title,
         businessPermitUrl: updatedProperty.business_permit,
         fireInspectionUrl: updatedProperty.fire_inspection,
@@ -149,7 +180,10 @@ const PropertyListingsDashboard: React.FC<PropertyListingsDashboardProps> = ({
         dueDate: updatedProperty.due_date
           ? format(new Date(updatedProperty.due_date), "MMMM dd, yyyy")
           : "N/A",
-        isApproved: updatedProperty.isApproved || false,
+        isApproved: updatedProperty.isApproved,
+        updatedAt: updatedProperty.updated_at
+          ? format(new Date(updatedProperty.updated_at), "MMMM dd, yyyy")
+          : "",
       };
     } catch (error) {
       console.error("Error fetching updated property:", error);
