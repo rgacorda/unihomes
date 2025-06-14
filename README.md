@@ -52,7 +52,7 @@
 ## 📦 Project Structure
 
 ```
-
+```bash
 app/
 ├── (routes)/            # Pages and layouts
 ├── dashboard/           # Authenticated routes
@@ -62,7 +62,7 @@ hooks/                   # Custom hooks (auth, data-fetching)
 types/                   # TypeScript interfaces
 store/                   # Zustand state
 
-````
+```
 
 ---
 
